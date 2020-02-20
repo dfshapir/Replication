@@ -7,6 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# I made echo = TRUE because I want for Preceptor to be able to see my code comments.
+
 library(foreign)
 library(plyr)
 library(dplyr)
@@ -35,7 +38,7 @@ library(interactions)
 ### Data Management
 
 ```{r}
-data <- read.csv2("wp_data_raw.csv")
+data <- read.csv2("raw-data/wp_data_raw.csv")
 stargazer(data)
 ```
 
@@ -158,7 +161,7 @@ write.csv2(data, file = "wp_data_survey.csv")
 ############## Analysis #####################
 
 ```{r}
-data <- read.csv2("wp_data_survey.csv")
+data <- read.csv2("raw-data/wp_data_survey.csv")
 ```
 
 ## Table1
@@ -298,7 +301,7 @@ predict(m1, newdata8, type = "response")
 ########## Table 3
 
 ```{r}
-data <- read.csv2("wp_data_courts.csv")
+data <- read.csv2("raw-data/wp_data_courts.csv")
 
 ## Last names of plaintiffs are reducted from these data for privacy reasons 
 
@@ -387,7 +390,7 @@ predict(m1, newdata8, type = "response")
 #################################### FIGURES
 
 ```{r}
-data <- read.csv2("wp_data_raw.csv")
+data <- read.csv2("raw-data/wp_data_raw.csv")
 ```
 
 ##### Figure 2
@@ -395,11 +398,7 @@ data <- read.csv2("wp_data_raw.csv")
 ### Intergating 
 
 ```{r}
-suppressMessages(
-  "https://raw.github.com/gerasy1987/useful_r/master/functions.R" %>%
-    devtools::source_url()
-)
-
+# This code was originally here, but the link threw an Error 404, so I'm just putting it in the comments. suppressMessages("https://raw.github.com/gerasy1987/useful_r/master/functions.R" %>% devtools::source_url()). My guess is that this was simply used to make sure that the code ran smoother.
 
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
@@ -636,7 +635,7 @@ figure2 <- multiplot(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, cols = 2)
 
 ## Figure 3
 ```{r}
-data <- read.csv2("wp_data_survey.csv")
+data <- read.csv2("raw-data/wp_data_survey.csv")
 range01 <- function(x) {(x - min(x))/(max(x) - min(x))}
 require(plyr)
 length2 <- function (x, na.rm=FALSE) {
@@ -712,7 +711,7 @@ figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
 #### Figure 5
 
 ```{r}
-data <- read.csv2("wp_data_survey.csv")
+data <- read.csv2("raw-data/wp_data_survey.csv")
 
 
 data$victimized[data$com_exposure=='0']<-'nonvictimized'
@@ -738,7 +737,7 @@ figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") +
 
 ```{r}
 
-total <- read.csv2("wp_data_Chechnya_Ingushetia.csv")
+total <- read.csv2("raw-data/wp_data_Chechnya_Ingushetia.csv")
 
 ftotal <- total[which(total$data.female==1),]
 mtotal <- total[which(total$data.female==0),]
