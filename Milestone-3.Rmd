@@ -48,25 +48,36 @@ stargazer(data)
 
 ```{r}
 
-## This first section here appears to be data cleaning. 
+## This first section here defines indexes and pares down data into more usable forms. The recode_dummy function is meant to help recoding the other variables.  
 
 recode_dummy <- function(.df, 
                          .name_q,
                          .val) {
+  
+# If a value in a given column of a dataframe is not NOT a value or NA, it gets recoded as 1, otherwise, it becomes 0. 
+  
   return(ifelse(test = (.df[,.name_q] != .val | is.na(.df[, .name_q])), 
                 yes = 0, 
                 no = 1))
 }
 
+# 
+
 data$V1RL <- recode_dummy(.df = data, 
                           .name_q = "Q1", 
                           .val = 1)
+
+# Creates the variable names by pasting a Q before a number, given by 1, 3, 5, and then a sequence by twos from 8 to 22. 
+
 varnames <- paste0("Q", c(1,3,5,seq(8,22,2)))
 
 
-## Loop for RL
+## Loop for RL (Russian Law)
 
 for (i in 1:10) {
+  
+# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then RL. For those columns, the recode_dummy is run on it to make it have the value of 1. 1 will signify Russian Law.
+  
   .name_dummy <- paste0("V",i,"RL")
   data[,.name_dummy] <- recode_dummy(.df = data, 
                                      .name_q = varnames[i], 
@@ -77,6 +88,9 @@ for (i in 1:10) {
 ## Loop for Sharia 
 
 for (i in 1:10) {
+  
+# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then S. For those columns, the recode_dummy is run on it to make it have the value of 2. 2 will signify Sharia.
+  
   .name_dummy <- paste0("V",i,"S")
   data[,.name_dummy] <- recode_dummy(.df = data, 
                                      .name_q = varnames[i], 
@@ -87,6 +101,9 @@ for (i in 1:10) {
 ## Loop for Adat 
 
 for (i in 1:10) {
+  
+# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then A. For those columns, the recode_dummy is run on it to make it have the value of 3. 3 will signify Adat.
+  
   .name_dummy <- paste0("V",i,"A")
   data[,.name_dummy] <- recode_dummy(.df = data, 
                                      .name_q = varnames[i], 
@@ -98,6 +115,9 @@ for (i in 1:10) {
 ##### INDEX for preference for Russian Law
 
 data$indexRL<-NA
+
+# Lazarev creates a new column, called indexRL (in a non-tidyverse manner). indexRL is created by adding together all of the previously-created variables and dividing them by 10 (the number that would be created, given that the for loop was meant to be from 1:10).
+
 data$indexRL <- (data$V1RL + data$V2RL + data$V3RL + data$V4RL + data$V5RL +
                    data$V6RL + data$V7RL + data$V8RL + data$V9RL + data$V10RL)/10
 
@@ -105,12 +125,16 @@ hist(data$indexRL)
 
 ##### INDEX for preference for Sharia
 
+# The same process is repeated for Sharia.
+
 data$indexS<-NA
 data$indexS <- (data$V1S + data$V2S + data$V3S + data$V4S + data$V5S +
                   data$V6S + data$V7S + data$V8S + data$V9S + data$V10S)/10
 hist(data$indexS)
 
 ##### INDEX for preference for Adat
+
+# The same procedure is repeated for Adat.
 
 data$indexA<-NA
 data$indexA <- (data$V1A + data$V2A + data$V3A + data$V4A + data$V5A +
@@ -895,8 +919,12 @@ figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") +
 
 total <- read.csv2("raw-data/wp_data_Chechnya_Ingushetia.csv")
 
+# Reads in comparative data. Then, he splits it up into two dataframes -- ftotal and mtotal, for women and men. 
+
 ftotal <- total[which(total$data.female==1),]
 mtotal <- total[which(total$data.female==0),]
+
+# The below two sets of code are exactly the same as in the code chunk a little ways up that I already put in a lot of comments for. This time, there are only two of these chunks instead of three, because the point is to show support for Russian law as it compares across two republics: Chechnya and Ingushetia, instead of comparing across three types of law (Russian, sharia and adat). I would personally be curious to see what the data shows about sharia and adat as well for these comparisons; this may be something I dive into in my replication. 
 
 means1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, mean, na.rm = T), digits=3)
 sds1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, sd, na.rm = T), digits=3)
@@ -913,6 +941,8 @@ se2 <- round(sds2/sqrt(n2), digits=3)
 error2 <- round((qt(0.975,df=n2-1)*se2), digits = 3)
 min <- c(0,1)
 object2 <- c(2,2)
+
+# Again, this is the exact same process as in the code beforehand. 
 
 V1_dat <- rbind(cbind(object1, min, means1, sds1, n1, se1, error1, deparse.level=0),
                 cbind(object2, min, means2, sds2, n2, se2, error2, deparse.level=0))
@@ -950,4 +980,6 @@ figure6 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank())
+
+# All of the formatting is the same for this graph as for the last one of this type. It shows what percentage of Chechen women vs. Ingush women prefer Russian law in comparison to how many Chechen men vs. Ingush men prefer Russian law. 
 ```
