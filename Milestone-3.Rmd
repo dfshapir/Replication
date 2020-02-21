@@ -40,11 +40,16 @@ library(interactions)
 ```{r}
 data <- read.csv2("raw-data/wp_data_raw.csv")
 stargazer(data)
+
+## I read up on the stargazer package; this essentially converts the csv into a table you can copy into Microsoft Word and edit.
 ```
 
 ## Function 
 
 ```{r}
+
+## This first section here appears to be data cleaning. 
+
 recode_dummy <- function(.df, 
                          .name_q,
                          .val) {
@@ -118,6 +123,9 @@ hist(data$indexA)
 ## Age Cohorts
 
 ```{r}
+
+# In this code chunk, the author sets the contents of the age_cohorts column to reflect ranges defined by the author. So 17-29 is "youth", 30-49 is "midage" and 50-83 is "older."
+
 data$age_cohorts <- NA
 data$age_cohorts[data$age > 17 & data$age < 30]<- "youth"
 data$age_cohorts[data$age > 29 & data$age < 50]= "midage"
@@ -127,6 +135,8 @@ data$age_cohorts[data$age > 49 & data$age < 83]= "older"
 ## Imputation 
 
 ```{r}
+# The author loads various useful packages, including the Harrell Miscellaneous package (Hmisc), which has a treasure trove of random functions for various aspects of coding, including for imputation. The mi package (Missing Data Imputation and Model Checking) is more well-tuned for imputation, as the description suggests.
+
 library(mi)
 library(Hmisc)
 ```
@@ -134,11 +144,16 @@ library(Hmisc)
 ## Education 
 
 ```{r}
+# Here, the author makes a new dataframe entitled datax out of some of the columns from the "data" dataframe that he had read in and edited earlier. Specifically, he takes the edu, female, age, urban, urban_Soviet, knowRL, and unemployed variables. 
+
 x<-cbind(data$edu,data$female,data$age,data$urban, data$urban_Soviet, data$knowRL, data$unemployed)
 datax<-as.data.frame(x)
+
+# The author has to figure out how to deal with missing data. So he uses the missing_data.frame() call to prepare the data for multiple imputation, which he does by calling the mi() command. The complete() call completes the process (1 being the number of multiply imputed data frames to return) so that he has a new dataframe that he can work with later, called newdata. I had to define the complete() call as mi::complete, because there is an identical call in the tidyr package that does not understand how to work with multiple imputation, and that was being used as the default. I have used this method in other similar areas of the code as well. He then saves the imputed V1 column (a column that previously had missing data) as the edufull column in the original data set. The mi package is an interesting one that I would like to explore further. 
+
 mdf<-missing_data.frame(datax)
 imp.mi<-mi(mdf)
-newdata<-complete(imp.mi,m=1)
+newdata<-mi::complete(imp.mi,m=1)
 
 data$edufull<-newdata$V1
 ```
@@ -146,34 +161,45 @@ data$edufull<-newdata$V1
 ## Income 
 
 ```{r}
+
+# Here the author uses the exact same code as the previous one, except that he includes a few other variables that are more related to income, apparently, including the recently created edufull column. At the end of this excersive, he writes a new csv over the old csv with the same title. I moved the file to the raw-data area so that I could read it back in again. 
+
 x<-cbind(data$income, data$edufull, data$female, data$age,data$urban, data$official, data$unemployed)
 datax<-as.data.frame(x)
 mdf<-missing_data.frame(datax)
 imp.mi<-mi(mdf)
-newdata<-complete(imp.mi,m=1)
+newdata<-mi::complete(imp.mi,m=1)
 
 data$incomefull<-newdata$V1
 
-write.csv2(data, file = "wp_data_survey.csv")
+write.csv2(data, file = "raw-data/wp_data_survey.csv")
 ```
 
 
 ############## Analysis #####################
 
 ```{r}
+# Here, he re-reads in the csv which he has edited. I assume that the analysis section was originally done in a different document, so it was necessary to overwrite the old csv in the previous bit of code to simply read it back in again in the next one. 
+
 data <- read.csv2("raw-data/wp_data_survey.csv")
 ```
 
 ## Table1
 
 ```{r}
+# The author constructs a series of regressions, aimed to elucidate each variable's effect on the predefined tendencies to prefer either Russian law (indexRL), sharia law (indexS), or adat (indexA). By running the regressions, the author shows that the "female" variable is by far the most robust of the tested variables for indexRL (Russian law). Many of the other variables for this regression tell us absolutely nothing -- the standard error for many is greater in absolute value than the actual estimate itself. Incidentally, all of the data shown in these regressions here are then put into a copyable table form by stargazer() and shown on page 687. 
+
 m1 <- lm(indexRL ~ killed + wounded + damaged + displaced + female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
 summary(m1) 
 
+# The second regression is set up in the same way. The summary(m2) shows us that unemployment has the largest impact on someone's likelihood to prefer sharia. The author does not discuss this in great detail, which I think is a mistake: it's a pretty well-known fact that Wahhabist mercenaries targeted unemployed men to join their ranks and attend their informal madrasas. The fact that these people prefer sharia, according to this study, fits with the broader understanding of the impact of Islamist fighters on the conflict and the strategies they took to consolidate power.
+
 m2 <- lm(indexS ~ killed + wounded + damaged + displaced + female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
 summary(m2) 
+
+# In this regression, the data shown by the summary indicates that being part of the "older" age grouping (as created earlier, defined by ages 50-83) has the most significant impact on likelihood to prefer customary law. This makes a certain amount of sense, given the traditional nature of adat.
 
 m3 <- lm(indexA ~ killed + wounded + damaged + displaced + female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
@@ -183,6 +209,8 @@ stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimizat
 stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimization on Legal Preferences", align=TRUE, no.space=TRUE,
           type="html",
           out="table1.doc")
+
+# I understand that Lazarev did not focus so much on determinants for preferring other forms of law, because it is not his main argument, but these in themselves are worth exploring further, even though they only really confirm the pre-existing literature. For one, focusing on sharia as more than just "patriarchal," but also as a tool directed toward the less-well-off, would be interesting and useful. 
 ```
 
 ## Table 2
