@@ -1,6 +1,6 @@
 # Replication
 
-This project is a replication of an article entitled 
+This project is a replication of an article entitled "Laws In Conflict: Legacies of War, Gender, and Legal Pluralism in Chechnya" by Egor Lazarev. Lazarev examines post-war Chechnya and how legacies of war affect people's choice between various legal processes, mainly through the prism of gender in a heavily traditional (and retraditionalizing society). My project works to replicate, expand on and critique Lazarev's work.
 
 # Data
 
