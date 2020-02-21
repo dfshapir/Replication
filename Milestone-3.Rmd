@@ -54,7 +54,7 @@ recode_dummy <- function(.df,
                          .name_q,
                          .val) {
   
-# If a value in a given column of a dataframe is not NOT a value or NA, it gets recoded as 1, otherwise, it becomes 0. 
+# If a value in a given column of a dataframe is not NA or not NOT the given value, it gets recoded as 1, otherwise, it becomes 0.
   
   return(ifelse(test = (.df[,.name_q] != .val | is.na(.df[, .name_q])), 
                 yes = 0, 
@@ -67,7 +67,7 @@ data$V1RL <- recode_dummy(.df = data,
                           .name_q = "Q1", 
                           .val = 1)
 
-# Creates the variable names by pasting a Q before a number, given by 1, 3, 5, and then a sequence by twos from 8 to 22. 
+# Creates the variable names for future use in the below for loops by pasting a Q before a number, given by 1, 3, 5, and then a sequence by twos from 8 to 22. 
 
 varnames <- paste0("Q", c(1,3,5,seq(8,22,2)))
 
@@ -76,7 +76,7 @@ varnames <- paste0("Q", c(1,3,5,seq(8,22,2)))
 
 for (i in 1:10) {
   
-# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then RL. For those columns, the recode_dummy is run on it to make it have the value of 1. 1 will signify Russian Law.
+# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then RL. There will be 10 columns. For those columns, the recode_dummy is run on it to see if it has the value of 1. 1 signifies Russian Law. It gets recoded as 1 in the new column if the value in the old column is 1, and as 0 if not.
   
   .name_dummy <- paste0("V",i,"RL")
   data[,.name_dummy] <- recode_dummy(.df = data, 
@@ -89,8 +89,8 @@ for (i in 1:10) {
 
 for (i in 1:10) {
   
-# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then S. For those columns, the recode_dummy is run on it to make it have the value of 2. 2 will signify Sharia.
-  
+# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then S. There will be 10 columns. For those columns, the recode_dummy is run on it to see if it has the value of 2. 2 signifies Sharia. It gets recoded as 1 in the new column if the value in the old column is 2, and as 0 if not. 
+
   .name_dummy <- paste0("V",i,"S")
   data[,.name_dummy] <- recode_dummy(.df = data, 
                                      .name_q = varnames[i], 
@@ -102,7 +102,7 @@ for (i in 1:10) {
 
 for (i in 1:10) {
   
-# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then A. For those columns, the recode_dummy is run on it to make it have the value of 3. 3 will signify Adat.
+# .name_dummy is defined as a variable name in which "V" has been pasted before the number, then A. There will be 10 columns. For those columns, the recode_dummy is run on it to see if it has the value of 3. 3 signifies Adat. It gets recoded as 1 in the new column if the value in the old column is 3, and as 0 if not. 
   
   .name_dummy <- paste0("V",i,"A")
   data[,.name_dummy] <- recode_dummy(.df = data, 
@@ -116,7 +116,7 @@ for (i in 1:10) {
 
 data$indexRL<-NA
 
-# Lazarev creates a new column, called indexRL (in a non-tidyverse manner). indexRL is created by adding together all of the previously-created variables and dividing them by 10 (the number that would be created, given that the for loop was meant to be from 1:10).
+# Lazarev creates a new column, called indexRL (in a non-tidyverse manner). indexRL is created by adding together all of the previously-created variables that end in RL and dividing them by 10 (the number of variables that would be created, given that the for loop was meant to be from 1:10). He then creates a histogram for them to show the distribution of values. 
 
 data$indexRL <- (data$V1RL + data$V2RL + data$V3RL + data$V4RL + data$V5RL +
                    data$V6RL + data$V7RL + data$V8RL + data$V9RL + data$V10RL)/10
