@@ -448,7 +448,7 @@ newdata8 = data.frame(com_exposure = 1, urban = 0, mountainous =0, russ_pop = 0,
 predict(m1, newdata7, type = "response")
 predict(m1, newdata8, type = "response")
 
-# I wonder why Lazarev did not continue the comparisons with non-family related cases? Perhaps the coefficients that he found in the previous code chunk were not significant enough for non-family-related cases that he decided it was not worth his time.
+# I wonder why Lazarev did not continue the comparisons with non-family related cases? Perhaps the coefficients that he found in the previous code chunk were not significant enough for non-family-related cases that he decided it was not worth his time. Maybe he was just messing around and trying things. Either way, he didn't end up stargazer()-ing them. 
 ```
 
 #################################### FIGURES
