@@ -187,7 +187,7 @@ data <- read.csv2("raw-data/wp_data_survey.csv")
 ## Table1
 
 ```{r}
-# The author constructs a series of regressions, aimed to elucidate each variable's effect on the predefined tendencies to prefer either Russian law (indexRL), sharia law (indexS), or adat (indexA). By running the regressions, the author shows that the "female" variable is by far the most robust of the tested variables for indexRL (Russian law). Many of the other variables for this regression tell us absolutely nothing -- the standard error for many is greater in absolute value than the actual estimate itself. Incidentally, all of the data shown in these regressions here are then put into a copyable table form by stargazer() and shown on page 687. 
+# The author constructs a series of regressions, aimed to elucidate each variable's effect on the predefined tendencies to prefer either Russian law (indexRL), sharia law (indexS), or adat (indexA). By running the regressions, the author shows that the "female" variable is by far the most robust of the tested variables for indexRL (Russian law). Many of the other variables for this regression tell us absolutely nothing -- the standard error for many is greater in absolute value than the actual estimate itself. All of the data shown in these regressions here are then put into a copyable table form by stargazer() and shown later. **NOTE** this chunk, while labeled as "table 1" is actually shown in the article as Table 2. It is also worth noting that the regressions here published slightly different numbers than shown in Lazarev's table. The general trends are still the same and the numbers are almost the same, so it's not like Lazarev is wrong -- my guess is that it's something small in the code. I wil mess around with this some more and see if I can get his exact numbers. 
 
 m1 <- lm(indexRL ~ killed + wounded + damaged + displaced + female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
@@ -210,22 +210,33 @@ stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimizat
           type="html",
           out="table1.doc")
 
-# I understand that Lazarev did not focus so much on determinants for preferring other forms of law, because it is not his main argument, but these in themselves are worth exploring further, even though they only really confirm the pre-existing literature. For one, focusing on sharia as more than just "patriarchal," but also as a tool directed toward the less-well-off, would be interesting and useful. 
+# I understand that Lazarev did not focus so much on determinants for preferring other forms of law, because it is not his main argument, but these in themselves are worth exploring further, even though they only really confirm the pre-existing literature. For one, focusing on sharia as more than just "patriarchal," but also as a tool directed toward the less-well-off, would be interesting and useful. I also already am starting to complain about some of the intricacies of his argument not tied to his code, but I'll save that for my paper. 
 ```
 
 ## Table 2
 
 ```{r}
+
+# This set of regressions is meant to address the problem of victimization at the community level. By putting one of the variables as com_exposure*female, Lazarev estimates the effect of the interaction between community victimization and gender on the choice of law. m1 represents the effect on choice of Russian state law, m2 represents the effect on choice of sharia, and m3 represents the effect on choice of adat. In the regressions, there are coefficients for the com_exposure and female variables separately, as well as the interaction between the two. He also includes the rayon variable. A "rayon" is essentially the Russian administrative version of something between a municipality and a county -- they're usually smaller than US counties but contain multiple towns. Kurchaloi rayon, for example, would likely also include the town of Geldagan and Mairtup. He does this so that he can properly measure community victimization, as he shows on pages 688 and 689 and in Figure 4. 
+
+# Lazarev explains that there are a lot of difficulties and a lot of factors that go into establishing why a community has been exposed to violence, and he worries about the data being endogenous. So he adds in a couple of other variables that help define geography -- distance from Groznyy (the capital, which everyone was trying to control) and altitude. I think that altitude is a much more important variable here; the culture of mountainous Chechnya is much different than that of lowland Chechnya. Furthermore, in the course of the war, a lot of areas that are near Groznyy were nearly untouched by the war, because they were occupied by forces loyal to the federal center from very close to the beginning. The Kadyrov clan hails from Kurchaloi rayon and controlled Gudermes along with the Yamadayev family, thereby ensuring safety for these areas, as both families allied with the Russian center early on in the Second Chechen War. Both areas were targeted during the First Chechen War, mitigating this security somewhat, but this is an important distinction to make. While Lazarev doesn't analyze these intricacies very closely, the altitude factor (upland Chechnya was poorer and almost entirely rebel-held, while much of the valleys ended up turning toward the center) is definitely important. I have more complaints about this variable being used as a predictor, but I will save that for my analysis. He adds other variables in here too, such as Russian population. Maybe being exposed to ethnic Russians makes Chechens more or less likely to choose sharia or traditional law. 
+
 m1 <- lm(indexRL ~ com_exposure*female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
            russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = data)
 summary(m1)
 
+# Below, Lazarev clusters his standard errors at the community level. He does this for the other two regressions as well. This is so he can compare men's and women's predispositions toward or against Russian law in victimized versus non-victimized communities. To argue which communities have been "victimized," he explains in his piece that he takes evidence from some personal interviews, including some with NGOs that help tell him which areas have been "victimized" and which were not. He identifies sixteen communities that were targeted in either war and 23 that weren't.
+
 m1_vcov <- cluster.vcov(m1, data$location)
 
 coeftest(m1, vcov. = m1_vcov)
 
+# Gives the coefficients, standard error, z value, etc.
+
 cluster_se <- sqrt(diag(cluster.vcov(m1, data$location)))
+
+# The above code provides the standard error for the coefficients. 
 
 m2 <- lm(indexS ~ com_exposure*female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
@@ -237,7 +248,6 @@ m2_vcov <- cluster.vcov(m2, data$location)
 coeftest(m2, vcov. = m2_vcov)
 
 cluster_se <- sqrt(diag(cluster.vcov(m2, data$location)))
-
 
 m3 <- lm(indexA ~ com_exposure*female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
@@ -255,11 +265,16 @@ stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
                                 coeftest(m3, vcov. = m3_vcov)[,2]),
           type="html",
           out="table2.doc")
+
+# Above, Lazarev puts the results of his regressions into a usable table. For se (standard error), he takes the second column of each. 
 ```
 
 ## Predicted Values 
 
 ```{r}
+
+# In this chunk, Lazarev runs the same regression as in the previous chunk and creates new one-line data frames based on switching out one variable and taking the means for other variables. In newdata1:newdata4, urban_com = 1, meaning that the community is urban, rather than rural. In newdata5:newdata8, urban_com = 0, meaning that the community is rural. newdata1 and newdata5 measure instances where the participant is not female and the community has not been victimized. newdata2 and newdata6 are non-victimized and female, 3 and 7 are victimized and non-female, and 4 and 8 are victimized and female. These are all conglomerated to predict indexRL values given the defined parameters in the various newdata chunks, as defined below. 
+
 m1 <- lm(indexRL ~ com_exposure*female + 
   as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
     russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = data)
@@ -314,6 +329,8 @@ newdata8 = data.frame(com_exposure = 1, female = 1, age_cohorts = 'midage',
                       lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
                       lcom_size = mean(data$lcom_size))
 
+# This series of predict() functions forms a major part of Lazarev's argument. Essentially, he uses the linear regression model (m1) and adds the new data in, with the adjusted parameters for female, victimization and urbanity, and then predicts values for what the mean indexRL value will be for all of them. Again, my values are slightly different from Lazarev's values, but the patterns are all the same. Incidentally, the urban/rural divide does not make any real difference on the gender divide in this regression. In general, the final four predictions (with urban_com set to 0) are about 2 points higher across the board. 
+
 predict(m1, newdata1, type = "response")
 predict(m1, newdata2, type = "response")
 predict(m1, newdata3, type = "response")
@@ -331,21 +348,29 @@ predict(m1, newdata8, type = "response")
 ```{r}
 data <- read.csv2("raw-data/wp_data_courts.csv")
 
-## Last names of plaintiffs are reducted from these data for privacy reasons 
+## Last names of plaintiffs are reducted from these data for privacy reasons [LAZAREV NOTE]
+
+# In the below bit of code, Lazarev splits the data frame into two separate dataframes, one where the "family" variable is equal to 1, and one where it is not. The "family" variable indicates if the case is related to family disputes or not. A little over 60% of cases (shown by the 6144 rows in famdata in comparison to 9359 in data) are.
 
 famdata <- data[which(data$family==1),]
 nonfamdata <- data[which(data$family==0),]
+
+# Here, Lazarev sets up another regression, in which he uses "istez_females" as the dependent variable. In Russian, the word "istets" means plaintiff, so this is a variable with 1 where the istets is female, and 0 where the istets is not. He uses the original data (not limited to family cases) for this regression. He sets "family" equal to binomial(link = 'logit') meaning that this is a binomial logistic regression. glm() is used here as compared to lm() in the previous one, because while indexRL was a numeric variable, istez_females is categorical. 
 
 m1 <- glm(istez_females ~ com_exposure + urban +
             mountainous + russ_pop + pop_fem_share + 
             as.factor(year),family=binomial(link='logit'),data=data)
 summary(m1)
 
+# The below lines of code are similar to what we've seen earlier, in which he clusters by a geographic indicator. Previously, this was "rayon," referring to a smaller delineation of the region (Chechnya). An "uchastok" refers to the jurisdiction of a certain court. There should be more uchastoks than rayons, but they do correspond to geographic areas. 
+
 m1_vcov <- cluster.vcov(m1, data$uchastok)
 
 coeftest(m1, vcov. = m1_vcov)
 
 cluster_se <- sqrt(diag(cluster.vcov(m1, data$uchastok)))
+
+# All of the above code is almost identical to that of the previous chunk. Below, Lazarev does the same things as he did above for famdata and for nonfamdata. This way, he'll be able to get coefficients for all cases, cases about family issues, and cases that aren't about family issues. 
 
 stargazer(m1, se = list(coeftest(m1, vcov. = m1_vcov)[,2]), 
           omit.stat = c("rsq", "f", "adj.rsq", "ser"))
@@ -387,6 +412,9 @@ stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
 ## Predicted Probability 
 
 ```{r}
+
+# In this section, Lazarev makes the same sort of predictions as he did in the # Predicted Values section of code. However, he uses the glm() regression from the last code chunk, rather than the lm() from the code chunk before that. Again, he is trying to calculate the effects of various variables on the phenomenon of the plaintiff being a woman, and then using the predict() function to get a "response" of the data-based predicted percentage. For example, the following lines of code use the prior logistic regression, and then fit new data frames on to it where com_exposure (victimization) equals zero or one, and compares how community exposure to atrocities is related to the probability that a plaintiff will be a woman in a family-based case (given that the "family" variable is set equal to one for both newdata1 and newdata2; it is a control variable here) in non-mountainous regions, non-urban regions.
+
 m1 <- glm(istez_females ~ com_exposure + urban + mountainous + russ_pop + pop_fem_share + family + as.factor(year),family=binomial(link='logit'),data=data)
 summary(m1)
 
@@ -396,11 +424,15 @@ newdata2 = data.frame(com_exposure = 1, urban = 0, mountainous =0, russ_pop = 0,
 predict(m1, newdata1, type = "response")
 predict(m1, newdata2, type = "response")
 
+# The next data change the "mountainous" variable to equal one, so the next predictions do basically the same thing for mountainous, rural regions.
+
 newdata3 = data.frame(com_exposure = 0, urban = 0, mountainous =1, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
 newdata4 = data.frame(com_exposure = 1, urban = 0, mountainous =1, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
 
 predict(m1, newdata3, type = "response")
 predict(m1, newdata4, type = "response")
+
+# These predictions measure the same phenomenon, but for urban, non-mountainous areas.
 
 newdata5 = data.frame(com_exposure = 0, urban = 1, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
 newdata6 = data.frame(com_exposure = 1, urban = 1, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
@@ -408,11 +440,15 @@ newdata6 = data.frame(com_exposure = 1, urban = 1, mountainous =0, russ_pop = 0,
 predict(m1, newdata5, type = "response")
 predict(m1, newdata6, type = "response")
 
+# These predictions measure the same phenomenon as newdata1 and 2, but for non-family-related cases.
+
 newdata7 = data.frame(com_exposure = 0, urban = 0, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 0, year = 2013)
 newdata8 = data.frame(com_exposure = 1, urban = 0, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 0, year = 2013)
 
 predict(m1, newdata7, type = "response")
 predict(m1, newdata8, type = "response")
+
+# I wonder why Lazarev did not continue the comparisons with non-family related cases? Perhaps the coefficients that he found in the previous code chunk were not significant enough for non-family-related cases that he decided it was not worth his time.
 ```
 
 #################################### FIGURES
@@ -431,16 +467,16 @@ data <- read.csv2("raw-data/wp_data_raw.csv")
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
   
-  # Make a list from the ... arguments and plotlist
+  # Make a list from the ... arguments and plotlist [LAZAREV NOTE]
   plots <- c(list(...), plotlist)
   
   numPlots = length(plots)
   
-  # If layout is NULL, then use 'cols' to determine layout
+  # If layout is NULL, then use 'cols' to determine layout [LAZAREV NOTE]
   if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
+    # Make the panel [LAZAREV NOTE]
+    # ncol: Number of columns of plots [LAZAREV NOTE]
+    # nrow: Number of rows needed, calculated from # of cols [LAZAREV NOTE]
     layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
                      ncol = cols, nrow = ceiling(numPlots/cols))
   }
@@ -449,13 +485,13 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     print(plots[[1]])
     
   } else {
-    # Set up the page
+    # Set up the page [LAZAREV NOTE]
     grid.newpage()
     pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
     
-    # Make each plot, in the correct location
+    # Make each plot, in the correct location [LAZAREV NOTE]
     for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
+      # Get the i,j matrix positions of the regions that contain this subplot [LAZAREV NOTE]
       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
       
       print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
@@ -662,7 +698,11 @@ figure2 <- multiplot(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, cols = 2)
 ```
 
 ## Figure 3
+
 ```{r}
+
+# Starts on page 685. 
+
 data <- read.csv2("raw-data/wp_data_survey.csv")
 range01 <- function(x) {(x - min(x))/(max(x) - min(x))}
 require(plyr)
@@ -672,6 +712,9 @@ length2 <- function (x, na.rm=FALSE) {
 }
 
 if (!require(pacman)) install.packages("pacman")
+
+# Calling p_load checks to see if the listed packages have been installed, and if not, it attempts to install the package.
+
 pacman::p_load(readr, ggplot2, plyr, dplyr, magrittr, tidyr, purrr, ggthemes)
 
 means1 <- round(tapply(data$indexRL, data$female, mean, na.rm = T), digits=3)
