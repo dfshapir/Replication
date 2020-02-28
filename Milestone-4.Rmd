@@ -11,6 +11,9 @@ library(tinytex)
 library(bookdown)
 library(gt)
 library(tidyverse)
+library(stargazer)
+library(multiwayvcov)
+library(lmtest)
 
 # Loaded the packages that Preceptor suggested.
 ```
@@ -64,4 +67,61 @@ gttable
 
 ```
 
+Regression Table:
+
+This table measures the effects of various variables, including community exposure to violence, urbanity, mountainous, size of Russian population, percent of women in the population and year on the likelihood that a woman will be the plaintiff in a case. The data is split up into total cases (the first column), cases where the the case subject matter is a family issue (the second column), and cases where the case subject matter is not a family issue (third column). All data and code (with some tweaks, as indicated in my code comments) is from my replication article. 
+
+```{r include = FALSE}
+reg_data <- read.csv2("raw-data/wp_data_courts.csv")
+
+# I changed the name of the data from his original. I also put include = FALSE so that this all would not show up in the PDF, but I could make a table out of it. 
+
+famdata <- reg_data[which(reg_data$family==1),]
+nonfamdata <- reg_data[which(reg_data$family==0),]
+
+m1 <- glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data = reg_data)
+summary(m1)
+
+m1_vcov <- cluster.vcov(m1, reg_data$uchastok)
+
+coeftest(m1, vcov. = m1_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m1, reg_data$uchastok)))
+
+stargazer(m1, se = list(coeftest(m1, vcov. = m1_vcov)[,2]), 
+          omit.stat = c("rsq", "f", "adj.rsq", "ser"))
+
+m2 <- glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data=famdata)
+summary(m2)
+
+m2_vcov <- cluster.vcov(m2, famdata$uchastok)
+
+coeftest(m2, vcov. = m2_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m2, famdata$uchastok)))
+
+m3 <- glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data=nonfamdata)
+summary(m3)
+
+m3_vcov <- cluster.vcov(m3, nonfamdata$uchastok)
+
+coeftest(m3, vcov. = m3_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m3, nonfamdata$uchastok)))
+```
+
+```{r results = "asis"}
+stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
+                                coeftest(m2, vcov. = m2_vcov)[,2],
+                                coeftest(m3, vcov. = m3_vcov)[,2]),
+          type="latex")
+
+# The only changes I really made here was the type (I used latex; he used html and then printed to a doc so that he could put it in his paper), and the fact that I put results = "asis" so that it would work in my document. Thanks to Cian for leading me to this trick. 
+```
 
