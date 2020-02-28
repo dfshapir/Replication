@@ -196,18 +196,18 @@ newdata<-mi::complete(imp.mi,m=1)
 
 data$incomefull<-newdata$V1
 
-write.csv2(data, file = "raw-data/wp_data_survey.csv")
+write.csv2(data, file = "raw-data/upd_wp_data_survey.csv")
 
-# I'm not going to push the updated wp_data_survey.csv to git, because if that is the version that whoever is reading my code starts with, there will be no way for them to read the above chunk -- everything will be moot. It can only be the original version in github, I think. 
+# I changed the name of the rewritten file so that I could keep an original copy and an edited one. 
 ```
 
 
 ############## Analysis #####################
 
 ```{r}
-# Here, he re-reads in the csv which he has edited. I assume that the analysis section was originally done in a different document, so it was necessary to overwrite the old csv in the previous bit of code to simply read it back in again in the next one. 
+# Here, he re-reads in the csv which he has edited. I assume that the analysis section was originally done in a different document, so it was necessary to overwrite the old csv in the previous bit of code to simply read it back in again in the next one. I, however, have already saved it to a different name to avoid confusion. 
 
-data <- read.csv2("raw-data/wp_data_survey.csv")
+upd_data <- read.csv2("raw-data/upd_wp_data_survey.csv")
 ```
 
 ## Table1
@@ -216,19 +216,19 @@ data <- read.csv2("raw-data/wp_data_survey.csv")
 # The author constructs a series of regressions, aimed to elucidate each variable's effect on the predefined tendencies to prefer either Russian law (indexRL), sharia law (indexS), or adat (indexA). By running the regressions, the author shows that the "female" variable is by far the most robust of the tested variables for indexRL (Russian law). Many of the other variables for this regression tell us absolutely nothing -- the standard error for many is greater in absolute value than the actual estimate itself. All of the data shown in these regressions here are then put into a copyable table form by stargazer() and shown later. **NOTE** this chunk, while labeled as "table 1" is actually shown in the article as Table 2. It is also worth noting that the regressions here published slightly different numbers than shown in Lazarev's table. The general trends are still the same and the numbers are almost the same, so it's not like Lazarev is wrong -- my guess is that it's something small in the code. I wil mess around with this some more and see if I can get his exact numbers. 
 
 m1 <- lm(indexRL ~ killed + wounded + damaged + displaced + female + 
-           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
 summary(m1) 
 
 # The second regression is set up in the same way. The summary(m2) shows us that unemployment has the largest impact on someone's likelihood to prefer sharia. The author does not discuss this in great detail, which I think is a mistake: it's a pretty well-known fact that Wahhabist mercenaries targeted unemployed men to join their ranks and attend their informal madrasas. The fact that these people prefer sharia, according to this study, fits with the broader understanding of the impact of Islamist fighters on the conflict and the strategies they took to consolidate power.
 
 m2 <- lm(indexS ~ killed + wounded + damaged + displaced + female + 
-           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
 summary(m2) 
 
 # In this regression, the data shown by the summary indicates that being part of the "older" age grouping (as created earlier, defined by ages 50-83) has the most significant impact on likelihood to prefer customary law. This makes a certain amount of sense, given the traditional nature of adat.
 
 m3 <- lm(indexA ~ killed + wounded + damaged + displaced + female + 
-           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
 summary(m3) 
 stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimization on Legal Preferences", align=TRUE, no.space=TRUE)
 
@@ -249,42 +249,42 @@ stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimizat
 
 m1 <- lm(indexRL ~ com_exposure*female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
-           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = data)
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data)
 summary(m1)
 
 # Below, Lazarev clusters his standard errors at the community level. He does this for the other two regressions as well. This is so he can compare men's and women's predispositions toward or against Russian law in victimized versus non-victimized communities. To argue which communities have been "victimized," he explains in his piece that he takes evidence from some personal interviews, including some with NGOs that help tell him which areas have been "victimized" and which were not. He identifies sixteen communities that were targeted in either war and 23 that weren't.
 
-m1_vcov <- cluster.vcov(m1, data$location)
+m1_vcov <- cluster.vcov(m1, upd_data$location)
 
 coeftest(m1, vcov. = m1_vcov)
 
 # Gives the coefficients, standard error, z value, etc.
 
-cluster_se <- sqrt(diag(cluster.vcov(m1, data$location)))
+cluster_se <- sqrt(diag(cluster.vcov(m1, upd_data$location)))
 
 # The above code provides the standard error for the coefficients. 
 
 m2 <- lm(indexS ~ com_exposure*female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
-           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = data)
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data)
 summary(m2)
 
-m2_vcov <- cluster.vcov(m2, data$location)
+m2_vcov <- cluster.vcov(m2, upd_data$location)
 
 coeftest(m2, vcov. = m2_vcov)
 
-cluster_se <- sqrt(diag(cluster.vcov(m2, data$location)))
+cluster_se <- sqrt(diag(cluster.vcov(m2, upd_data$location)))
 
 m3 <- lm(indexA ~ com_exposure*female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
-           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = data)
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data)
 summary(m3)
 
-m3_vcov <- cluster.vcov(m3, data$location)
+m3_vcov <- cluster.vcov(m3, upd_data$location)
 
 coeftest(m3, vcov. = m3_vcov)
 
-cluster_se <- sqrt(diag(cluster.vcov(m2, data$location)))
+cluster_se <- sqrt(diag(cluster.vcov(m2, upd_data$location)))
 
 stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
                                 coeftest(m2, vcov. = m2_vcov)[,2],
@@ -303,59 +303,59 @@ stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
 
 m1 <- lm(indexRL ~ com_exposure*female + 
   as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
-    russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = data)
+    russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = upd_data)
 summary(m1)
 
 # Why does Lazarev set age_cohorts to "midage" in everything? I would like to see what would happen to this numbers if age_cohorts is set to something different. 
 
 newdata1 = data.frame(com_exposure = 0, female = 0, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
-                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      incomefull = mean(upd_data$incomefull), edufull = mean(upd_data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(upd_data$russ_pop), 
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 newdata2 = data.frame(com_exposure = 0, female = 1, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
-                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      incomefull = mean(upd_data$incomefull), edufull = mean(upd_data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(upd_data$russ_pop), 
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 newdata3 = data.frame(com_exposure = 1, female = 0, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
-                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      incomefull = mean(upd_data$incomefull), edufull = mean(upd_data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(upd_data$russ_pop), 
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 newdata4 = data.frame(com_exposure = 1, female = 1, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
-                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      incomefull = mean(upd_data$incomefull), edufull = mean(upd_data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(upd_data$russ_pop), 
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 
 newdata5 = data.frame(com_exposure = 0, female = 0, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
-                      unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      incomefull = mean(upd_data$incomefull), edufull = mean(upd_data$edufull),
+                      unemployed = 0, urban_com = 0, russ_pop = mean(upd_data$russ_pop), 
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 newdata6 = data.frame(com_exposure = 0, female = 1, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      incomefull = mean(upd_data$incomefull), edufull = mean(upd_data$edufull),
                       unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 newdata7 = data.frame(com_exposure = 1, female = 0, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
-                      unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      incomefull = mean(upd_data$incomefull), edufull = mean(upd_data$edufull),
+                      unemployed = 0, urban_com = 0, russ_pop = mean(upd_data$russ_pop), 
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 newdata8 = data.frame(com_exposure = 1, female = 1, age_cohorts = 'midage',
-                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
-                      unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
-                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
-                      lcom_size = mean(data$lcom_size))
+                      incomefull = mean(data$incomefull), edufull = mean(upd_data$edufull),
+                      unemployed = 0, urban_com = 0, russ_pop = mean(upd_data$russ_pop), 
+                      lmaltitude = mean(upd_data$lmaltitude), ldistance_Grozny = mean(upd_data$ldistance_Grozny),
+                      lcom_size = mean(upd_data$lcom_size))
 
 # This series of predict() functions forms a major part of Lazarev's argument. Essentially, he uses the linear regression model (m1) and adds the new data in, with the adjusted parameters for female, victimization and urbanity, and then predicts values for what the mean indexRL value will be for all of them. Again, my values are slightly different from Lazarev's values, but the patterns are all the same. Incidentally, the urban/rural divide does not make any real difference on the gender divide in this regression. In general, the final four predictions (with urban_com set to 0) are about 2 points higher across the board. 
 
@@ -374,29 +374,31 @@ predict(m1, newdata8, type = "response")
 ########## Table 3
 
 ```{r}
-data <- read.csv2("raw-data/wp_data_courts.csv")
+courts_data <- read.csv2("raw-data/wp_data_courts.csv")
+
+# Originally, Lazarev was just lazy and made all of his csv read-ins be entitled "data." To avoid confusion, I changed the names. 
 
 ## Last names of plaintiffs are reducted from these data for privacy reasons [LAZAREV NOTE]
 
 # In the below bit of code, Lazarev splits the data frame into two separate dataframes, one where the "family" variable is equal to 1, and one where it is not. The "family" variable indicates if the case is related to family disputes or not. A little over 60% of cases (shown by the 6144 rows in famdata in comparison to 9359 in data) are.
 
-famdata <- data[which(data$family==1),]
-nonfamdata <- data[which(data$family==0),]
+famdata <- courts_data[which(courts_data$family==1),]
+nonfamdata <- courts_data[which(courts_data$family==0),]
 
 # Here, Lazarev sets up another regression, in which he uses "istez_females" as the dependent variable. In Russian, the word "istets" means plaintiff, so this is a variable with 1 where the istets is female, and 0 where the istets is not. He uses the original data (not limited to family cases) for this regression. He sets "family" equal to binomial(link = 'logit') meaning that this is a binomial logistic regression. glm() is used here as compared to lm() in the previous one, because while indexRL was a numeric variable, istez_females is categorical. 
 
 m1 <- glm(istez_females ~ com_exposure + urban +
             mountainous + russ_pop + pop_fem_share + 
-            as.factor(year),family=binomial(link='logit'),data=data)
+            as.factor(year),family=binomial(link='logit'),data=courts_data)
 summary(m1)
 
 # The below lines of code are similar to what we've seen earlier, in which he clusters by a geographic indicator. Previously, this was "rayon," referring to a smaller delineation of the region (Chechnya). An "uchastok" refers to the jurisdiction of a certain court. There should be more uchastoks than rayons, but they do correspond to geographic areas. 
 
-m1_vcov <- cluster.vcov(m1, data$uchastok)
+m1_vcov <- cluster.vcov(m1, courts_data$uchastok)
 
 coeftest(m1, vcov. = m1_vcov)
 
-cluster_se <- sqrt(diag(cluster.vcov(m1, data$uchastok)))
+cluster_se <- sqrt(diag(cluster.vcov(m1, courts_data$uchastok)))
 
 # All of the above code is almost identical to that of the previous chunk. Below, Lazarev does the same things as he did above for famdata and for nonfamdata. This way, he'll be able to get coefficients for all cases, cases about family issues, and cases that aren't about family issues. 
 
@@ -443,7 +445,7 @@ stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
 
 # In this section, Lazarev makes the same sort of predictions as he did in the # Predicted Values section of code. However, he uses the glm() regression from the last code chunk, rather than the lm() from the code chunk before that. Again, he is trying to calculate the effects of various variables on the phenomenon of the plaintiff being a woman, and then using the predict() function to get a "response" of the data-based predicted percentage. For example, the following lines of code use the prior logistic regression, and then fit new data frames on to it where com_exposure (victimization) equals zero or one, and compares how community exposure to atrocities is related to the probability that a plaintiff will be a woman in a family-based case (given that the "family" variable is set equal to one for both newdata1 and newdata2; it is a control variable here) in non-mountainous regions, non-urban regions.
 
-m1 <- glm(istez_females ~ com_exposure + urban + mountainous + russ_pop + pop_fem_share + family + as.factor(year),family=binomial(link='logit'),data=data)
+m1 <- glm(istez_females ~ com_exposure + urban + mountainous + russ_pop + pop_fem_share + family + as.factor(year),family=binomial(link='logit'),data=courts_data)
 summary(m1)
 
 newdata1 = data.frame(com_exposure = 0, urban = 0, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
@@ -482,9 +484,9 @@ predict(m1, newdata8, type = "response")
 #################################### FIGURES
 
 ```{r}
-data <- read.csv2("raw-data/wp_data_raw.csv")
+figdat <- read.csv2("raw-data/wp_data_raw.csv")
 
-# Reads in data_raw.csv again
+# This chunk reads in the data_raw csv. Am changing to "figdat" to avoid confusion with the first "data" title.
 ```
 
 ##### Figure 2
@@ -492,6 +494,8 @@ data <- read.csv2("raw-data/wp_data_raw.csv")
 ### Intergating 
 
 ```{r}
+# NOTE: Above
+
 # This code was originally here, but the link threw an Error 404, so I'm just putting it in the comments. suppressMessages("https://raw.github.com/gerasy1987/useful_r/master/functions.R" %>% devtools::source_url()). My guess is that this was simply used to make sure that the code ran smoother.
 
 # Below, Lazarev walks us through the creation of his multiplot() function. 
@@ -539,7 +543,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 # This is code for a ggplot regarding child custody, represented by Q1 in the data. NAs are removed at the beginning. The bars in the geom_bar are represented by decimals -- how many people answer one type of court divided by the total number of answers.
 
-h1 <- ggplot(data=data[!is.na(data$Q1),], 
+h1 <- ggplot(data=figdat[!is.na(figdat$Q1),], 
              aes(factor(Q1))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -563,7 +567,7 @@ h1 <- ggplot(data=data[!is.na(data$Q1),],
 
 # This plot is exactly the same as the previous one, but it uses Q3 instead of Q1.
 
-h2 <- ggplot(data=data[!is.na(data$Q3_graph),], 
+h2 <- ggplot(data=figdat[!is.na(figdat$Q3_graph),], 
              aes(factor(Q3_graph))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -584,7 +588,7 @@ h2 <- ggplot(data=data[!is.na(data$Q3_graph),],
 
 # This plot is exactly the same as the previous one, but it uses Q5. 
 
-h3 <- ggplot(data=data[!is.na(data$Q5_graph),], 
+h3 <- ggplot(data=figdat[!is.na(figdat$Q5_graph),], 
              aes(factor(Q5_graph))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -606,7 +610,7 @@ h3 <- ggplot(data=data[!is.na(data$Q5_graph),],
 
 # This plot is exactly the same as the previous one, but it uses Q8.
 
-h4 <- ggplot(data=data[!is.na(data$Q8_graph),], 
+h4 <- ggplot(data=figdat[!is.na(figdat$Q8_graph),], 
              aes(factor(Q8_graph))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -627,7 +631,7 @@ h4 <- ggplot(data=data[!is.na(data$Q8_graph),],
 
 # This plot is exactly the same as the previous one, but it uses Q10.
 
-h5 <- ggplot(data=data[!is.na(data$Q10),], 
+h5 <- ggplot(data=figdat[!is.na(figdat$Q10),], 
              aes(factor(Q10))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -646,11 +650,11 @@ h5 <- ggplot(data=data[!is.na(data$Q10),],
 ### Plot 6.1: Inheritance 
 
 ```{r}
-table(data$Q12)
+table(figdat$Q12)
 
 # The plot is exactly the same as the previous one, but it uses Q8. However, for whatever reason, he puts a table of the values above it. The above code produces the number of "1", "2", "3", and "4" responses, that correspond to Russian Law, Sharia, Adat, and Don't Know, respectively. I'm not sure why he did this; the plot works fine with or without this step. 
 
-h6 <- ggplot(data=data[!is.na(data$Q12),], 
+h6 <- ggplot(data=figdat[!is.na(figdat$Q12),], 
              aes(factor(Q12))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -668,11 +672,11 @@ h6 <- ggplot(data=data[!is.na(data$Q12),],
 ### Plot 7.1: Property 
 
 ```{r}
-table(data$Q14)
+table(figdat$Q14)
 
 # Same code as before, same question about above table() call. 
 
-h7 <- ggplot(data=data[!is.na(data$Q14),], 
+h7 <- ggplot(data=figdat[!is.na(figdat$Q14),], 
              aes(factor(Q14))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -691,11 +695,11 @@ h7 <- ggplot(data=data[!is.na(data$Q14),],
 ### Plot 8.1: Car Incident  
 
 ```{r}
-table(data$Q16)
+table(figdat$Q16)
 
 # Same code as before, same question about above table() call. 
 
-h8 <- ggplot(data=data[!is.na(data$Q16),], 
+h8 <- ggplot(data=figdat[!is.na(figdat$Q16),], 
              aes(factor(Q16))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -713,11 +717,11 @@ h8 <- ggplot(data=data[!is.na(data$Q16),],
 ### Plot 9.1: Debt
 
 ```{r}
-table(data$Q18)
+table(figdat$Q18)
 
 # Same code as before, same question about above table() call. 
 
-h9 <- ggplot(data=data[!is.na(data$Q18),], 
+h9 <- ggplot(data=figdat[!is.na(figdat$Q18),], 
              aes(factor(Q18))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -735,11 +739,11 @@ h9 <- ggplot(data=data[!is.na(data$Q18),],
 ### Plot 10.1: Murder
 
 ```{r murder}
-table(data$Q20)
+table(figdat$Q20)
 
 # Same code as before, same question about above table() call. 
 
-h10 <- ggplot(data=data[!is.na(data$Q20),], 
+h10 <- ggplot(data=figdat[!is.na(figdat$Q20),], 
               aes(factor(Q20))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
            fill=("grey69"), position = "dodge") + 
@@ -765,7 +769,7 @@ figure2 <- multiplot(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, cols = 2)
 
 # Starts on page 685. Reads in survey data (original or updated? I'm personally uncertain; will require some messing around). **OVERALL: WOULD LIKE TO DISCUSS THIS SECTION, SOME THINGS I'M NOT SURE I UNDERSTAND. 
 
-data <- read.csv2("raw-data/wp_data_survey.csv")
+fig3dat <- read.csv2("raw-data/upd_wp_data_survey.csv")
 
 # Here, Lazarev creates a function that can be applied to a vector of "x" values. The numerator of the function is the minimum value of x subtracted from the given value of x over the range of the vector (maximum-minimum).
 
@@ -789,9 +793,9 @@ pacman::p_load(readr, ggplot2, plyr, dplyr, magrittr, tidyr, purrr, ggthemes)
 
 # I'm pretty sure that tapply() here is calling to apply the mean() function of the data$indexRL vector over the data$female factor. So the 0 and 1 here should be referring to 0 being non-female and 1 being female. The round() function makes it only keep 3 decimals. The same is true for sds1. For n1, round() is not necessary, because the length2 function won't give back decimals. 
 
-means1 <- round(tapply(data$indexRL, data$female, mean, na.rm = T), digits=3)
-sds1 <- round(tapply(data$indexRL, data$female, sd, na.rm = T), digits=3)
-n1 <- tapply(data$indexRL, data$female, length2, na.rm = T)
+means1 <- round(tapply(fig3dat$indexRL, fig3dat$female, mean, na.rm = T), digits=3)
+sds1 <- round(tapply(fig3dat$indexRL, fig3dat$female, sd, na.rm = T), digits=3)
+n1 <- tapply(fig3dat$indexRL, fig3dat$female, length2, na.rm = T)
 
 # se1 is standard error and is just the standard error function: the standard deviation (sds1) divided by the square root of the length. 
 
@@ -808,18 +812,18 @@ object1 <- c(1,1)
 
 # The below chunk repeats the above process for data$indexS.
 
-means2 <- round(tapply(data$indexS, data$female, mean, na.rm = T), digits=3)
-sds2 <- round(tapply(data$indexS, data$female, sd, na.rm = T), digits=3)
-n2 <- tapply(data$indexS, data$female, length2, na.rm = T)
+means2 <- round(tapply(fig3dat$indexS, fig3dat$female, mean, na.rm = T), digits=3)
+sds2 <- round(tapply(fig3dat$indexS, fig3dat$female, sd, na.rm = T), digits=3)
+n2 <- tapply(fig3dat$indexS, fig3dat$female, length2, na.rm = T)
 se2 <- round(sds2/sqrt(n2), digits=3)
 error2 <- round((qt(0.975,df=n2-1)*se2), digits = 3)
 object2 <- c(2,2)
 
 # The below chunk repeats the earlier process for data$indexA. 
 
-means3 <- round(tapply(data$indexA, data$female, mean, na.rm = T), digits=3)
-sds3 <- round(tapply(data$indexA, data$female, sd, na.rm = T), digits=3)
-n3 <- tapply(data$indexA, data$female, length2, na.rm = T)
+means3 <- round(tapply(fig3dat$indexA, fig3dat$female, mean, na.rm = T), digits=3)
+sds3 <- round(tapply(fig3dat$indexA, fig3dat$female, sd, na.rm = T), digits=3)
+n3 <- tapply(fig3dat$indexA, fig3dat$female, length2, na.rm = T)
 se3 <- round(sds3/sqrt(n3), digits=3)
 error3 <- round((qt(0.975,df=n3-1)*se3), digits = 3)
 object3 <- c(3,3)
@@ -882,23 +886,23 @@ figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
 #### Figure 5
 
 ```{r}
-data <- read.csv2("raw-data/wp_data_survey.csv")
+fig5data <- read.csv2("raw-data/upd_wp_data_survey.csv")
 
 # Again, very much irritates me that he writes over his code and then reads it in again. I need to figure out if this is the original survey data, or the edited surey data. A message is even thrown due to this issue when I read it in now. 
 
-data$victimized[data$com_exposure=='0']<-'nonvictimized'
-data$victimized[data$com_exposure=='1']<-'victimized'
+fig5data$victimized[fig5data$com_exposure=='0']<-'nonvictimized'
+fig5data$victimized[fig5data$com_exposure=='1']<-'victimized'
 
 # Here he decides to finally label com_exposure as victimized or nonvictimized, as he uses throughout his paper. He cleans some things up below too, regarding male and female. My guess is that he does this so that it works better with cat_plot, instead of having 0 and 1 for both, that could theoretically be read as numbers.
 
-data$gender[data$female=='0']<-'male'
-data$gender[data$female=='1']<-'female'
+fig5data$gender[fig5data$female=='0']<-'male'
+fig5data$gender[fig5data$female=='1']<-'female'
 
 # Below, he creates a regression that analyzes the effect of the interaction of victimized and gender on indexRL, controlling for a lot of other variables. It is the same as in the first chunk of "predicted variables," just with a couple of renamed variables. 
 
 m1 <- lm(indexRL ~ victimized*gender + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
-           russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = data)
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = fig5data)
 summary(m1)
 
 # cat_plot() is used to plot interactions. Both the predictor and the moderator are categorical -- there are tow options "nonvictimized" and "victimized" and "male" and "female." The model is m1, the predictor is the victimized variable, and the moderator is the gender variable. Four bars are spit out: nonvictimized male, nonvictimized female, victimized male, and victimized female. The y-axis is the indexRL. 
