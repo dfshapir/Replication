@@ -123,7 +123,8 @@ cluster_se <- sqrt(diag(cluster.vcov(m3, nonfamdata$uchastok)))
 stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
                                 coeftest(m2, vcov. = m2_vcov)[,2],
                                 coeftest(m3, vcov. = m3_vcov)[,2]),
-          type="latex")
+          type="latex", 
+          header = FALSE)
 
 # The only changes I really made here was the type (I used latex; he used html and then printed to a doc so that he could put it in his paper), and the fact that I put results = "asis" so that it would work in my document. Thanks to Cian for leading me to this trick. 
 ```
