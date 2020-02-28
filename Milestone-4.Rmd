@@ -7,14 +7,61 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-library(tidyverse)
 library(tinytex)
 library(bookdown)
+library(gt)
+library(tidyverse)
 
 # Loaded the packages that Preceptor suggested.
 ```
 
+This paper by Egor Lazarev entitled "Laws In Conflict: Legacies of War, Gender, and Legal Pluralism in Chechnya" examines post-war Chechnya and how legacies of war affect people's choice between various legal processes. In modern-day Chechnya, there are three competing legal bodies: official Russian law, sharia courts, and customary law (adat). The author argues that sharia and adat courts are traditionally more discriminatory towards women, and that women are more likely than men to turn to state courts rather than sharia courts or adat. The pattern of women choosing to turn to state courts for legal disputes rather than sharia or customary courts is exacerbated, as the author works to show through data, by the level to which a region was affected by violence during the Chechen wars. In other words, conflict provided women with more opportunity to pursue their interests through official law. The author, Egor Lazarev, backs up his claim through data and through a comparison with neighboring Ingushetia, which has many similarities but has not gone through conflict. The enhanced opportunities for women in the legal process has been counterbalanced by an effort by the Ramzan Kadyrov government in Chechnya to retraditionalize the republic, and while women continue to look to state courts for assistance, Kadyrov works toward supporting more traditional forms of conflict resolution that favor men and Chechnya's traditionally patriarchal society. The author concludes that gender can play a large role in forming splits in postconflict societies.
+
+GT Table:
+
+```{r gt}
+gtdata <- read.csv2("raw-data/wp_data_raw.csv")
+
+gtdata$rayon <- recode(gtdata$rayon, `achkhoy-martan` = "Achkhoy-Martan",
+                       `argun` = "Argun",
+                       `groznenskiy` = "Groznenskiy",
+                       `gudermes` = "Gudermes",
+                       `itum_kali` = "Itum-Kali",
+                       `kurchaloi` = "Kurchaloi",
+                       `nadterechnyi` = "Nadterechnyi",
+                       `naursky` = "Naursky",
+                       `shali` = "Shali",
+                       `shatoi` = "Shatoi",
+                       `subzhenskiy` = "Sunzhenskiy",
+                       `urus-martan` = "Urus-Martan",
+                       `vedeno` = "Vedeno")
+
+# I recoded the names of the rayons (regions/counties) because he spelled a couple of them wrong, and I'd prefer for them to be capitalized in the table.
+
+gttable <- gtdata %>%
+  select(edu, age, ldistance_Grozny, rayon) %>%
+  na.omit() %>%
+  group_by(rayon) %>%
+  summarize_at(.vars = vars(edu, age, ldistance_Grozny),
+               .funs = c(mean="mean")) %>%
+  rename(Region = "rayon",
+         `Mean Education Index` = "edu_mean",
+         `Mean Age` = "age_mean",
+         `Mean Distance From Grozny (log)` = "ldistance_Grozny_mean") %>%
+
+# I changed the names of the variables to be less technical and more user-friendly.
+  
+  gt() %>%
+  tab_header(
+    title = "Indicators By Region",
+    subtitle = "Data From Egor Lazarev"
+  ) %>%
+  cols_align(align = "center", columns = TRUE)
+```
+
 ```{r}
+gttable
 
 ```
+
 
