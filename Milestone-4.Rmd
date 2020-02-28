@@ -3,6 +3,7 @@ title: "Milestone 4"
 author: "Daniel Shapiro"
 date: "2/26/2020"
 output: pdf_document
+# I saw Preceptor's recommendation to use the pdf_document2 class, but I just went for the classic PDF -- it looked nicer to me.
 bibliography: bib.bib
 link_citations: true
 ---
