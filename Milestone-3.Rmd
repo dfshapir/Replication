@@ -559,6 +559,8 @@ h1 <- ggplot(data=figdat[!is.na(figdat$Q1),],
        y = "Share",
        x = "") +
   theme_few(base_size = 20, base_family = "Helvetica")
+
+# NOTE: Originally, Lazarev included a theme_few() call with base_family set to "Helvetica". Unfortunately, I was unable to pull this font up in R, so I just went ahead and deleted the line. It doesn't change the data -- the font will just look a bit different.
 ```
 
 ### Plot 2.1: Domestic Violence 
