@@ -3,6 +3,8 @@ title: "Milestone 5"
 author: "Daniel Shapiro"
 date: "3/5/2020"
 output: pdf_document
+bibliography: bib.bib
+link_citations: true
 ---
 
 ```{r setup, include=FALSE}
