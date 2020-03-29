@@ -557,8 +557,7 @@ h1 <- ggplot(data=figdat[!is.na(figdat$Q1),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Child Custody",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 
 # NOTE: Originally, Lazarev included a theme_few() call with base_family set to "Helvetica". Unfortunately, I was unable to pull this font up in R, so I just went ahead and deleted the line. It doesn't change the data -- the font will just look a bit different.
 ```
@@ -580,8 +579,7 @@ h2 <- ggplot(data=figdat[!is.na(figdat$Q3_graph),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Domestic Violence",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 ```
 
 ### Plot 3.1: Bride Kidnapping
@@ -601,8 +599,7 @@ h3 <- ggplot(data=figdat[!is.na(figdat$Q5_graph),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Bride Kidnapping",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 ```
 
 ### Plot 4.1: Honor Killing
@@ -623,8 +620,7 @@ h4 <- ggplot(data=figdat[!is.na(figdat$Q8_graph),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Honor Killing",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 ```
 
 ### Plot 5.1: Polygamy
@@ -644,8 +640,7 @@ h5 <- ggplot(data=figdat[!is.na(figdat$Q10),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Polygamy",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 ```
 
 
@@ -667,8 +662,7 @@ h6 <- ggplot(data=figdat[!is.na(figdat$Q12),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Inheritance",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 ```
 
 ### Plot 7.1: Property 
@@ -689,8 +683,7 @@ h7 <- ggplot(data=figdat[!is.na(figdat$Q14),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Property",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 
 ```
 
@@ -712,8 +705,7 @@ h8 <- ggplot(data=figdat[!is.na(figdat$Q16),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Car Accident",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 ```
 
 ### Plot 9.1: Debt
@@ -734,8 +726,7 @@ h9 <- ggplot(data=figdat[!is.na(figdat$Q18),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Debt",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 ```
 
 ### Plot 10.1: Murder
@@ -756,13 +747,12 @@ h10 <- ggplot(data=figdat[!is.na(figdat$Q20),],
   scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
   labs(title = "Murder",
        y = "Share",
-       x = "") +
-  theme_few(base_size = 20, base_family = "Helvetica")
+       x = "")
 
 
 figure2 <- multiplot(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, cols = 2)
 
-# The above code finally uses the multiplot() function that Lazarev created in the code chunk above all of these plots. One thing that is interesting to note is that my version of r does not appreciate him labelling the base_family as Helvetica in the theme_few() function. Not sure why this is, but my graphs look significantly uglier than his due to this. 
+# The above code finally uses the multiplot() function that Lazarev created in the code chunk above all of these plots.
 ```
 
 ## Figure 3
@@ -912,10 +902,7 @@ summary(m1)
 figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") + 
   labs(x="", y = "") +
   scale_color_manual("gender", values=c('grey20','grey60'))+
-  scale_fill_manual("gender",values=c('grey30','grey80')) +
-  theme_few(base_size = 20, base_family = "Helvetica")
-
-# I'm going to have to change the font on all of these because Helvetica does not run in my version of R. 
+  scale_fill_manual("gender",values=c('grey30','grey80'))
   
 ```          
 
