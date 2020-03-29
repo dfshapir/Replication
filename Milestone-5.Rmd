@@ -22,6 +22,7 @@ This paper [@paper] by Egor Lazarev entitled "Laws In Conflict: Legacies of War,
 
 Lazarev uses data throughout his paper to support his claims. The primary method he uses is ordinary least squares regression, in which Lazarev tests a number of different independent variables, including gender, exposure to conflict, distance from Chechnya’s capital (Groznyy), altitude (given cultural differences between upland and lowland Chechens [@mountain]) and various other variables on three indexes, which he labels indexRL, indexS and indexA. IndexRL, created by Lazarev early in the paper based on interview data, measures a given person’s likelihood to opt for Russian law, which indexS and indexA measure likelihood of sharia and adat, respectively. The author includes a number of graphics as well, including several ggplots, regression tables (created through stargazer) and others. Lazarev uses all of these methods to elucidate patterns in the data and arrive at his previously-described conclusions.
 
+\pagebreak
 # Graphic
 
 In this graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes a very similar graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. 
@@ -188,4 +189,5 @@ Above is a screenshot of the actual table in Lazarev's paper. There are some dif
 knitr::include_graphics("lazarev_m5_screenshot.png")
 ```
 
+\pagebreak
 # References
