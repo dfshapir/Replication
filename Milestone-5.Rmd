@@ -24,10 +24,103 @@ Lazarev uses data throughout his paper to support his claims. The primary method
 
 ### Graphic
 
-```{r graphic}
+In this graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes a very similar graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. 
 
+```{r graphic, message = FALSE, warning = FALSE}
+# I commented out this whole code in my Milestone-3.Rmd in the Figure 3 section. I made a few changes for the purposes of this assignment, which I have indicated in this code chunk. 
+
+fig3dat <- read.csv2("raw-data/upd_wp_data_survey.csv")
+
+range01 <- function(x) {(x - min(x))/(max(x) - min(x))}
+
+require(plyr)
+length2 <- function (x, na.rm=FALSE) {
+  if (na.rm) sum(!is.na(x))
+  else       length(x)
+}
+
+if (!require(pacman)) install.packages("pacman")
+
+pacman::p_load(readr, ggplot2, plyr, dplyr, magrittr, tidyr, purrr, ggthemes)
+
+means1 <- round(tapply(fig3dat$indexRL, fig3dat$female, mean, na.rm = T), digits=3)
+sds1 <- round(tapply(fig3dat$indexRL, fig3dat$female, sd, na.rm = T), digits=3)
+n1 <- tapply(fig3dat$indexRL, fig3dat$female, length2, na.rm = T)
+
+se1 <- round(sds1/sqrt(n1), digits=3)
+
+error1 <- round((qt(0.975,df=n1-1)*se1), digits = 3)
+
+min <- c(0,1)
+object1 <- c(1,1)
+
+means2 <- round(tapply(fig3dat$indexS, fig3dat$female, mean, na.rm = T), digits=3)
+sds2 <- round(tapply(fig3dat$indexS, fig3dat$female, sd, na.rm = T), digits=3)
+n2 <- tapply(fig3dat$indexS, fig3dat$female, length2, na.rm = T)
+se2 <- round(sds2/sqrt(n2), digits=3)
+error2 <- round((qt(0.975,df=n2-1)*se2), digits = 3)
+object2 <- c(2,2)
+
+means3 <- round(tapply(fig3dat$indexA, fig3dat$female, mean, na.rm = T), digits=3)
+sds3 <- round(tapply(fig3dat$indexA, fig3dat$female, sd, na.rm = T), digits=3)
+n3 <- tapply(fig3dat$indexA, fig3dat$female, length2, na.rm = T)
+se3 <- round(sds3/sqrt(n3), digits=3)
+error3 <- round((qt(0.975,df=n3-1)*se3), digits = 3)
+object3 <- c(3,3)
+
+V1_dat <- rbind(cbind(object1, min, means1, sds1, n1, se1, error1, deparse.level=0),
+                cbind(object2, min, means2, sds2, n2, se2, error2, deparse.level=0),
+                cbind(object3, min, means3, sds3, n3, se3, error3, deparse.level=0))
+
+rownames(V1_dat) <- c(1:6) 
+colnames(V1_dat) <- c("sum", "min", "put", "sds", "n", "se", "error") 
+sb <- as.data.frame(V1_dat)
+
+sb2 <- sb
+
+sb2$min <- as.factor(sb2$min) 
+sb2$sum <- as.factor(sb2$sum)
+levels(sb2$sum) <- c("State Law", "Sharia", "Adat") 
+
+figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) + 
+  geom_bar(position=position_dodge(), 
+           stat="identity", size=.3) + 
+  geom_errorbar(aes(ymin=put-error, ymax=put+error),
+                size=.5,    
+                width=.3,
+                position=position_dodge(.9)) +
+  
+# Added titles and axis labels, changed to labs() instead of xlab(), ylab() and ggtitle()
+  
+  labs(title = "How Gender Impacts Choice of Legal System",
+       subtitle = "Data From Lazarev, 'Laws in Conflict: Legacies of War, Gender, and Legal Pluralism in Chechnya'",
+       x = "Legal System",
+       y = "Mean of Index",
+       caption = "Data from surveys performed by Lazarev during fieldwork. Indexes are calculated by averaging the number \nof scenarios where participants respond that they would choose one form of law over another.") +
+  coord_cartesian(ylim=c(0, .5))+  
+  scale_y_continuous(breaks=seq(0, 0.5, .1)) +
+  scale_fill_manual(name="Gender", 
+                    breaks=c("0", "1"), 
+                    labels=c("Male", 
+                             "Female"),
+                    
+# Capitalized legend labels
+
+                    values=c("cornsilk3", "gray33")) +
+  theme(text = element_text(size = 10),
+        
+# Changed text size
+        
+  axis.line = element_line(colour = "black"),
+
+# Kept axis title
+
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank())
+
+figure3
 ```
-
 
 ### Appendix
 
