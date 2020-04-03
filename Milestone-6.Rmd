@@ -3,17 +3,6 @@ title: "Milestone-6"
 author: "Daniel Shapiro"
 date: "4/2/2020"
 output: pdf_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
-
----
-title: "Milestone 5"
-author: "Daniel Shapiro"
-date: "3/5/2020"
-output: pdf_document
 bibliography: bib.bib
 link_citations: true
 ---
