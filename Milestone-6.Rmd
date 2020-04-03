@@ -142,7 +142,7 @@ figure3
 ```
 \pagebreak
 
-Labeled as Table 2 in the article. 
+Labeled as Table 2 in the article. Results aren't quite perfect, but they're very, very close. There are no discrepancies in trends between the replicated table and the table in the data. 
 
 ```{r include = FALSE}
 upd_data <- read.csv2("raw-data/upd_wp_data_survey.csv")
@@ -161,9 +161,57 @@ summary(l3)
 ```
 
 ```{r table2, results = "asis"}
-stargazer(l1, l2, l3, title="OLS Regression Analysis of the Impact of Victimization on Legal Preferences",
+stargazer(l1, l2, l3, title="OLS Regression Analysis of the Impact of Victimization on Legal Preferences", 
           type = "latex",
           header = FALSE)
+```
+
+Labeled as Table 3 in the article. In the table in the article, he removes a lot of the rows.
+
+```{r tab3prep, include = FALSE}
+k1 <- lm(indexRL ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data)
+summary(k1)
+
+k1_vcov <- cluster.vcov(k1, upd_data$location)
+
+coeftest(k1, vcov. = k1_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(k1, upd_data$location)))
+
+k2 <- lm(indexS ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data)
+summary(k2)
+
+k2_vcov <- cluster.vcov(k2, upd_data$location)
+
+coeftest(k2, vcov. = k2_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(k2, upd_data$location)))
+
+k3 <- lm(indexA ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data)
+summary(k3)
+
+k3_vcov <- cluster.vcov(k3, upd_data$location)
+
+coeftest(k3, vcov. = k3_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(k2, upd_data$location)))
+
+```
+
+```{r tab3, results = "asis"}
+
+stargazer(k1, k2, k3, se = list(coeftest(k1, vcov. = k1_vcov)[,2],
+                                coeftest(k2, vcov. = k2_vcov)[,2],
+                                coeftest(k3, vcov. = k3_vcov)[,2]),
+          type = "latex",
+          header = FALSE)
+
 ```
 
 Below, I used Lazarev's code to replicate a table from his paper. He labels it originally as Table 3 in his code; in the paper, it is labeled as Table 4.
