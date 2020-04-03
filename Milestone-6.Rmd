@@ -11,9 +11,27 @@ link_citations: true
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(stargazer)
-library(multiwayvcov)
-library(lmtest)
 library(bookdown)
+library(foreign)
+library(plyr)
+library(dplyr)
+library(Hmisc)
+library(arm)
+library(stargazer)
+library(ggthemes)
+require(ggplot2)
+require(reshape2)
+require(devtools)
+require(scales)
+library(lme4)
+library(magrittr)
+library(ggthemes)
+library(RColorBrewer)
+library(multiwayvcov)
+library(sandwich)
+library(lmtest)
+library(ggplot2)
+library(interactions)
 ```
 
 # Paper Overview
@@ -23,9 +41,9 @@ This paper [@paper] by Egor Lazarev entitled "Laws In Conflict: Legacies of War,
 Lazarev uses data throughout his paper to support his claims. The primary method he uses is ordinary least squares regression, in which Lazarev tests a number of different independent variables, including gender, exposure to conflict, distance from Chechnya’s capital (Groznyy), altitude (given cultural differences between upland and lowland Chechens [@mountain]) and various other variables on three indexes, which he labels indexRL, indexS and indexA. IndexRL, created by Lazarev early in the paper based on interview data, measures a given person’s likelihood to opt for Russian law, which indexS and indexA measure likelihood of sharia and adat, respectively. The author includes a number of graphics as well, including several ggplots, regression tables (created through stargazer) and others. Lazarev uses all of these methods to elucidate patterns in the data and arrive at his previously-described conclusions.
 
 \pagebreak
-# Graphic
+# Appendix
 
-In this graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes a very similar graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. 
+In this graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes the same graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. The graph is labeled in Lazarev's piece as FIGURE 3.
 
 ```{r graphic, message = FALSE, warning = FALSE}
 # I commented out this whole code in my Milestone-3.Rmd in the Figure 3 section. I made a few changes for the purposes of this assignment, which I have indicated in this code chunk. 
@@ -93,7 +111,7 @@ figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
   
 # Added titles and axis labels, changed to labs() instead of xlab(), ylab() and ggtitle()
   
-  labs(title = "How Gender Impacts Choice of Legal System",
+  labs(title = "FIGURE 3: How Gender Impacts Choice of Legal System",
        subtitle = "Data From Lazarev, 'Laws in Conflict: Legacies of War, Gender, and Legal Pluralism in Chechnya'",
        x = "Legal System",
        y = "Mean of Index",
@@ -124,7 +142,29 @@ figure3
 ```
 \pagebreak
 
-# Appendix
+Labeled as Table 2 in the article. 
+
+```{r include = FALSE}
+upd_data <- read.csv2("raw-data/upd_wp_data_survey.csv")
+
+l1 <- lm(indexRL ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
+summary(l1) 
+
+l2 <- lm(indexS ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
+summary(l2) 
+
+l3 <- lm(indexA ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
+summary(l3) 
+```
+
+```{r table2, results = "asis"}
+stargazer(l1, l2, l3, title="OLS Regression Analysis of the Impact of Victimization on Legal Preferences",
+          type = "latex",
+          header = FALSE)
+```
 
 Below, I used Lazarev's code to replicate a table from his paper. He labels it originally as Table 3 in his code; in the paper, it is labeled as Table 4.
 
@@ -173,7 +213,7 @@ coeftest(m3, vcov. = m3_vcov)
 cluster_se <- sqrt(diag(cluster.vcov(m3, nonfamdata$uchastok)))
 ```
 
-```{r results = "asis"}
+```{r tab4, results = "asis"}
 stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
                                 coeftest(m2, vcov. = m2_vcov)[,2],
                                 coeftest(m3, vcov. = m3_vcov)[,2]),
