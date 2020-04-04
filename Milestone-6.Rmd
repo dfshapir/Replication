@@ -166,6 +166,7 @@ stargazer(l1, l2, l3, title="OLS Regression Analysis of the Impact of Victimizat
           header = FALSE)
 ```
 
+\pagebreak
 Labeled as Table 3 in the article. In the table in the article, he removes a lot of the rows.
 
 ```{r tab3prep, include = FALSE}
@@ -209,11 +210,16 @@ cluster_se <- sqrt(diag(cluster.vcov(k2, upd_data$location)))
 stargazer(k1, k2, k3, se = list(coeftest(k1, vcov. = k1_vcov)[,2],
                                 coeftest(k2, vcov. = k2_vcov)[,2],
                                 coeftest(k3, vcov. = k3_vcov)[,2]),
+          title = "OLS Regression Analysis of the Effect of Community Victimization and Gender on Legal Preferences",
           type = "latex",
-          header = FALSE)
+          header = FALSE,
+          keep = c("\\bcom_exposure\\b", "\\bfemale\\b", "\\bConstant\\b"))
+
+# Formatted to make it look more like his table
 
 ```
 
+\pagebreak
 Below, I used Lazarev's code to replicate a table from his paper. He labels it originally as Table 3 in his code; in the paper, it is labeled as Table 4.
 
 ```{r include = FALSE}
@@ -265,6 +271,7 @@ cluster_se <- sqrt(diag(cluster.vcov(m3, nonfamdata$uchastok)))
 stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
                                 coeftest(m2, vcov. = m2_vcov)[,2],
                                 coeftest(m3, vcov. = m3_vcov)[,2]),
+          title = "Predicting Female Plaintiff in Civil Disputes: Binary Logistic Regression",
           type="latex", 
           header = FALSE)
 ```
@@ -278,7 +285,217 @@ knitr::include_graphics("lazarev_m5_screenshot.png")
 ```
 
 \pagebreak
+```{r include = FALSE}
+# NOTE: Above
 
+# This code was originally here, but the link threw an Error 404, so I'm just putting it in the comments. suppressMessages("https://raw.github.com/gerasy1987/useful_r/master/functions.R" %>% devtools::source_url()). My guess is that this was simply used to make sure that the code ran smoother.
+
+figdat <- read.csv2("raw-data/wp_data_raw.csv")
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+    plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout [LAZAREV NOTE]
+  if (is.null(layout)) {
+    # Make the panel [LAZAREV NOTE]
+    # ncol: Number of columns of plots [LAZAREV NOTE]
+    # nrow: Number of rows needed, calculated from # of cols [LAZAREV NOTE]
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page [LAZAREV NOTE]
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location [LAZAREV NOTE]
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot [LAZAREV NOTE]
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+
+```{r}
+h1 <- ggplot(data=figdat[!is.na(figdat$Q1),], 
+             aes(factor(Q1))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Child Custody",
+       y = "Share",
+       x = "")
+h1
+```
+
+
+```{r}
+h2 <- ggplot(data=figdat[!is.na(figdat$Q3_graph),], 
+             aes(factor(Q3_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Domestic Violence",
+       y = "Share",
+       x = "")
+h2
+```
+
+
+
+```{r}
+h3 <- ggplot(data=figdat[!is.na(figdat$Q5_graph),], 
+             aes(factor(Q5_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Bride Kidnapping",
+       y = "Share",
+       x = "")
+h3
+```
+
+
+```{r}
+h4 <- ggplot(data=figdat[!is.na(figdat$Q8_graph),], 
+             aes(factor(Q8_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Honor Killing",
+       y = "Share",
+       x = "")
+h4
+```
+
+
+```{r}
+h5 <- ggplot(data=figdat[!is.na(figdat$Q10),], 
+             aes(factor(Q10))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Polygamy",
+       y = "Share",
+       x = "")
+h5
+```
+
+
+```{r}
+h6 <- ggplot(data=figdat[!is.na(figdat$Q12),], 
+             aes(factor(Q12))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Inheritance",
+       y = "Share",
+       x = "")
+h6
+```
+
+
+```{r}
+h7 <- ggplot(data=figdat[!is.na(figdat$Q14),], 
+             aes(factor(Q14))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Property",
+       y = "Share",
+       x = "")
+h7
+```
+
+```{r}
+h8 <- ggplot(data=figdat[!is.na(figdat$Q16),], 
+             aes(factor(Q16))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Car Accident",
+       y = "Share",
+       x = "")
+h8
+```
+
+```{r}
+h9 <- ggplot(data=figdat[!is.na(figdat$Q18),], 
+             aes(factor(Q18))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Debt",
+       y = "Share",
+       x = "")
+h9
+```
+
+```{r murder}
+h10 <- ggplot(data=figdat[!is.na(figdat$Q20),], 
+              aes(factor(Q20))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Murder",
+       y = "Share",
+       x = "")
+h10
+```
+
+\pagebreak
 # Extension
 
 My extension is split up into two separate critiques: analysis critiques and data critiques. These two categories overlap significantly, but I believe that splitting them up in such a way provides structure to the paper. In general, I believe that Lazarev comes to many convincing conclusions and uses data well to support his findings. Nonetheless, there are a few areas in which I believe that Lazarev could have been more thorough and/or where I believe that literature does not support Lazarev’s findings.
