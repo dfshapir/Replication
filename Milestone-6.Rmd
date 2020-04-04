@@ -42,8 +42,7 @@ Lazarev uses data throughout his paper to support his claims. The primary method
 
 \pagebreak
 # Appendix
-
-In this graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes the same graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. The graph is labeled in Lazarev's piece as FIGURE 3.
+This appendix shows my replications of Lazarev's graphs and tables. In this first graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes the same graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. The graph is labeled in Lazarev's piece as FIGURE 3.
 
 ```{r graphic, message = FALSE, warning = FALSE}
 # I commented out this whole code in my Milestone-3.Rmd in the Figure 3 section. I made a few changes for the purposes of this assignment, which I have indicated in this code chunk. 
@@ -285,7 +284,7 @@ knitr::include_graphics("lazarev_m5_screenshot.png")
 ```
 
 \pagebreak
-These next few pages display a series of graphs which show up as one graphic (Figure 2) in the article. He originally had a nice function that grouped them all together into one graphic, but it didn't work for me. So I just included all the graphs individually. The numbers match those in the article. 
+These next few pages display a series of graphs which show up as one graphic (Figure 2) in the article. He originally had a nice function that grouped them all together into one graphic, but it didn't work for me. So I just included all the graphs individually -- my apologies. The numbers match those in the article. 
 ```{r include = FALSE}
 # NOTE: Above
 
@@ -461,6 +460,96 @@ h10 <- ggplot(data=figdat[!is.na(figdat$Q20),],
        y = "Share",
        x = "")
 h10
+```
+
+\pagebreak
+This next graph is Figure 5, showing differences in victimization and nonvictimization. The graph looks exactly like the one in the paper.
+
+```{r include = FALSE}
+fig5data <- read.csv2("raw-data/upd_wp_data_survey.csv")
+
+fig5data$victimized[fig5data$com_exposure=='0']<-'nonvictimized'
+fig5data$victimized[fig5data$com_exposure=='1']<-'victimized'
+
+fig5data$gender[fig5data$female=='0']<-'male'
+fig5data$gender[fig5data$female=='1']<-'female'
+
+m1 <- lm(indexRL ~ victimized*gender + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = fig5data)
+summary(m1)
+
+figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") + 
+  labs(x="", y = "", title = "Interaction Plot for the Effects of Community Victimization \nand Gender on Support for State Law") +
+  scale_color_manual("gender", values=c('grey20','grey60'))+
+  scale_fill_manual("gender",values=c('grey30','grey80'))
+``` 
+
+```{r}
+figure5
+```
+
+\pagebreak
+The final graph that the author uses is this comparison of how men and women view Russian state law in Chechnya and Ingushetia, comparatively. The replicated graph matches the one in the article. 
+```{r}
+total <- read.csv2("raw-data/wp_data_Chechnya_Ingushetia.csv")
+
+ftotal <- total[which(total$data.female==1),]
+mtotal <- total[which(total$data.female==0),]
+
+means1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, mean, na.rm = T), digits=3)
+sds1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, sd, na.rm = T), digits=3)
+n1 <- tapply(ftotal$data.indexRL, ftotal$chechnya, length2, na.rm = T)
+se1 <- round(sds1/sqrt(n1), digits=3)
+error1 <- round((qt(0.975,df=n1-1)*se1), digits = 3)
+min <- c(0,1)
+object1 <- c(1,1)
+
+means2 <- round(tapply(mtotal$data.indexRL, mtotal$chechnya, mean, na.rm = T), digits=3)
+sds2 <- round(tapply(mtotal$data.indexRL, mtotal$chechnya, sd, na.rm = T), digits=3)
+n2 <- tapply(mtotal$data.indexRL, mtotal$chechnya, length2, na.rm = T)
+se2 <- round(sds2/sqrt(n2), digits=3)
+error2 <- round((qt(0.975,df=n2-1)*se2), digits = 3)
+min <- c(0,1)
+object2 <- c(2,2)
+
+V1_dat <- rbind(cbind(object1, min, means1, sds1, n1, se1, error1, deparse.level=0),
+                cbind(object2, min, means2, sds2, n2, se2, error2, deparse.level=0))
+
+rownames(V1_dat) <- c(1:4) 
+colnames(V1_dat) <- c("sum", "min", "put", "sds", "n", "se", "error") 
+sb <- as.data.frame(V1_dat)
+
+sb2 <- sb
+sb2$min <- as.factor(sb2$min) 
+sb2$sum <- as.factor(sb2$sum)
+levels(sb2$sum) <- c("Women", "Men") 
+
+figure6 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) + 
+  geom_bar(position=position_dodge(), 
+           stat="identity", size=.3) +      
+  geom_errorbar(aes(ymin=put-error, ymax=put+error),
+                size=.5,    # Thinner lines
+                width=.3,
+                position=position_dodge(.9)) +
+  xlab("") +
+  ylab("") +
+  ggtitle("Gender Gaps in Support for State Law in Chechnya and Ingushetia") +
+  coord_cartesian(ylim=c(0, .5))+  
+  scale_y_continuous(breaks=seq(0, 0.5, .1)) +
+  scale_fill_manual(name="Region", # Legend label, use darker colors
+                    # breaks=c("1", "2", "3"),
+                    breaks=c("0", "1"), 
+                    labels=c("Ingushetia", 
+                             "Chechnya"),
+                    values=c("gray88", "grey44")) +
+  theme(text = element_text(size=10),
+        axis.line = element_line(colour = "black"),
+        axis.title.x = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank())
+figure6
 ```
 
 \pagebreak
