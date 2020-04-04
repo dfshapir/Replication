@@ -167,7 +167,7 @@ stargazer(l1, l2, l3, title="OLS Regression Analysis of the Impact of Victimizat
 ```
 
 \pagebreak
-Labeled as Table 3 in the article. In the table in the article, he removes a lot of the rows.
+Labeled as Table 3 in the article.
 
 ```{r tab3prep, include = FALSE}
 k1 <- lm(indexRL ~ com_exposure*female + 
@@ -285,6 +285,7 @@ knitr::include_graphics("lazarev_m5_screenshot.png")
 ```
 
 \pagebreak
+These next few pages display a series of graphs which show up as one graphic (Figure 2) in the article. He originally had a nice function that grouped them all together into one graphic, but it didn't work for me. So I just included all the graphs individually. The numbers match those in the article. 
 ```{r include = FALSE}
 # NOTE: Above
 
@@ -292,39 +293,6 @@ knitr::include_graphics("lazarev_m5_screenshot.png")
 
 figdat <- read.csv2("raw-data/wp_data_raw.csv")
 
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
-    plots <- c(list(...), plotlist)
-  
-  numPlots = length(plots)
-  
-  # If layout is NULL, then use 'cols' to determine layout [LAZAREV NOTE]
-  if (is.null(layout)) {
-    # Make the panel [LAZAREV NOTE]
-    # ncol: Number of columns of plots [LAZAREV NOTE]
-    # nrow: Number of rows needed, calculated from # of cols [LAZAREV NOTE]
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                     ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-  
-  if (numPlots==1) {
-    print(plots[[1]])
-    
-  } else {
-    # Set up the page [LAZAREV NOTE]
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-    
-    # Make each plot, in the correct location [LAZAREV NOTE]
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot [LAZAREV NOTE]
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-      
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
 ```
 
 
