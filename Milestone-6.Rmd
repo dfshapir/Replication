@@ -42,7 +42,9 @@ Lazarev uses data throughout his paper to support his claims. The primary method
 
 \pagebreak
 # Appendix
-This appendix shows my replications of Lazarev's graphs and tables. In this first graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes the same graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. The graph is labeled in Lazarev's piece as FIGURE 3.
+This appendix first shows my replications of Lazarev's graphs and tables, and then my summary of how replication went at the end, before my extension statement and bibliography. 
+
+In this first graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes the same graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. The graph is labeled in Lazarev's piece as FIGURE 3.
 
 ```{r graphic, message = FALSE, warning = FALSE}
 # I commented out this whole code in my Milestone-3.Rmd in the Figure 3 section. I made a few changes for the purposes of this assignment, which I have indicated in this code chunk. 
@@ -551,6 +553,10 @@ figure6 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
         panel.background = element_blank())
 figure6
 ```
+
+### Statement
+
+I was able to replicate all parts of Lazarev's paper. He provided very detailed code that matched almost exactly with the tables and graphs he provided in his paper. This section went quite smoothly. As such, I am focusing my extension (see next page) on critiques of Lazarev's analysis and data choices, not reproducibility.
 
 \pagebreak
 # Extension
