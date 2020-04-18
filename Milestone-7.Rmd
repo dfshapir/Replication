@@ -77,7 +77,7 @@ My extension is split up into three sections. The first is devoted to Bayesian a
 
 Lazarev has three sections in his code where he utilizes OLS regressions, labeled as Table 2, Table 3 and Table 4 in the data. Tables 2 and 3 are basic linear regressions; Table 4 is a logistic regression. I run Bayesian analysis on these three Tables. 
 
-First, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 2 in his data. 
+First, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 2 in his data. I ran stan_glm() on the same variables that Lazarev included, and put the resulting coefficients and error measurements into a gt table for easy readibility.  
 
 ```{r include = FALSE, cache = TRUE}
 set.seed(9)
@@ -106,21 +106,31 @@ tidytab2 <- tidytab2[,-c(4, 7)]
 
 tidytab2 <- tidytab2 %>%
   mutate(Variable = term) %>%
-  mutate(indexRL = estimate) %>%
-  mutate(errorRL = std.error) %>%
-  mutate(indexS = estimate.1) %>%
-  mutate(errorS = std.error.1) %>%
-  mutate(indexA = estimate.2) %>%
-  mutate(errorA = std.error.2) %>%
-  dplyr::select(Variable, indexRL, errorRL, indexS, errorS, indexA, errorA) %>%
-  mutate(indexRL = round(indexRL, digits = 3)) %>%
-  mutate(errorRL = round(errorRL, digits = 3)) %>%
-  mutate(indexS = round(indexS, digits = 3)) %>%
-  mutate(errorS = round(errorS, digits = 3)) %>%
-  mutate(indexA = round(indexA, digits = 3)) %>%
-  mutate(errorA = round(errorA, digits = 3))
+  mutate(`Index Russian Law` = estimate) %>%
+  mutate(`Error Russian Law` = std.error) %>%
+  mutate(`Index Sharia` = estimate.1) %>%
+  mutate(`Error Sharia` = std.error.1) %>%
+  mutate(`Index Adat` = estimate.2) %>%
+  mutate(`Error Adat` = std.error.2) %>%
+  dplyr::select(Variable, `Index Russian Law`, `Error Russian Law`, `Index Sharia`, `Error Sharia`, `Index Adat`, `Error Adat`) %>%
+  mutate(`Index Russian Law` = round(`Index Russian Law`, digits = 3)) %>%
+  mutate(`Error Russian Law` = round(`Error Russian Law`, digits = 3)) %>%
+  mutate(`Index Sharia` = round(`Index Sharia`, digits = 3)) %>%
+  mutate(`Error Sharia` = round(`Error Sharia`, digits = 3)) %>%
+  mutate(`Index Adat` = round(`Index Adat`, digits = 3)) %>%
+  mutate(`Error Adat` = round(`Error Adat`, digits = 3))
 
-gt(tidytab2)
+tidytab2$Variable <- recode(tidytab2$Variable, `(Intercept)` = "Intercept",
+                            `as.factor(age_cohorts)older` = "ageOlder",
+                            `as.factor(age_cohorts)youth` = "ageYouth")
+  
+gttable2 <- tidytab2 %>% 
+  gt() %>%
+  tab_header(title = "Bayesian Regression of Lazarev Table 2",
+             subtitle = "Data from Egor Lazarev") %>%
+  as_latex()
+
+gttable2
 ```
 
 Next, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 3 in his data.
@@ -150,21 +160,19 @@ tidytab3 <- tidytab3[c(1:3, 27),-c(4, 7)]
 
 tidytab3 <- tidytab3 %>%
   mutate(Variable = term) %>%
-  mutate(indexRL = estimate) %>%
-  mutate(errorRL = std.error) %>%
-  mutate(indexS = estimate.1) %>%
-  mutate(errorS = std.error.1) %>%
-  mutate(indexA = estimate.2) %>%
-  mutate(errorA = std.error.2) %>%
-  dplyr::select(Variable, indexRL, errorRL, indexS, errorS, indexA, errorA) %>%
-  mutate(indexRL = round(indexRL, digits = 3)) %>%
-  mutate(errorRL = round(errorRL, digits = 3)) %>%
-  mutate(indexS = round(indexS, digits = 3)) %>%
-  mutate(errorS = round(errorS, digits = 3)) %>%
-  mutate(indexA = round(indexA, digits = 3)) %>%
-  mutate(errorA = round(errorA, digits = 3))
-
-gt(tidytab3)
+  mutate(`Index Russian Law` = estimate) %>%
+  mutate(`Error Russian Law` = std.error) %>%
+  mutate(`Index Sharia` = estimate.1) %>%
+  mutate(`Error Sharia` = std.error.1) %>%
+  mutate(`Index Adat` = estimate.2) %>%
+  mutate(`Error Adat` = std.error.2) %>%
+  dplyr::select(Variable, `Index Russian Law`, `Error Russian Law`, `Index Sharia`, `Error Sharia`, `Index Adat`, `Error Adat`) %>%
+  mutate(`Index Russian Law` = round(`Index Russian Law`, digits = 3)) %>%
+  mutate(`Error Russian Law` = round(`Error Russian Law`, digits = 3)) %>%
+  mutate(`Index Sharia` = round(`Index Sharia`, digits = 3)) %>%
+  mutate(`Error Sharia` = round(`Error Sharia`, digits = 3)) %>%
+  mutate(`Index Adat` = round(`Index Adat`, digits = 3)) %>%
+  mutate(`Error Adat` = round(`Error Adat`, digits = 3))
 ```
 
 Finally, I run Bayesian regressions for the variables described in Table 4. 
@@ -213,7 +221,6 @@ tidytab4 <- tidytab4 %>%
   mutate(`Non-Family Cases` = round(`Non-Family Cases`, digits = 3)) %>%
   mutate(`Error Non-Family Cases` = round(`Error Non-Family Cases`, digits = 3))
 
-gt(tidytab4)
 ```
 
 #### Analysis critiques
