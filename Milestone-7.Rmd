@@ -163,9 +163,29 @@ stanm3 <- stan_glm(istez_females ~ com_exposure + urban +
             mountainous + russ_pop + pop_fem_share + 
             as.factor(year),family=binomial(link='logit'),data=nonfamdata, refresh = 0)
 tidystanm3 <- tidy(stanm3)
-
 ```
 
+```{r tidytab4}
+tidytab4 <- cbind(tidystanm1, tidystanm2, tidystanm3)
+
+tidytab4 <- tidytab4[,-c(4, 7)]
+
+tidytab4 <- tidytab4 %>%
+  mutate(Variable = term) %>%
+  mutate(`All Cases` = estimate) %>%
+  mutate(`Error All Cases` = std.error) %>%
+  mutate(`Family Cases` = estimate.1) %>%
+  mutate(`Error Family Cases` = std.error.1) %>%
+  mutate(`Non-Family Cases` = estimate.2) %>%
+  mutate(`Error Non-Family Cases` = estimate.2) %>%
+  dplyr::select(Variable, `All Cases`, `Error All Cases`, `Family Cases`, `Error Family Cases`, `Non-Family Cases`, `Error Non-Family Cases`) %>%
+  mutate(`All Cases` = round(`All Cases`, digits = 3)) %>%
+  mutate(`Error All Cases` = round(`Error All Cases`, digits = 3)) %>%
+  mutate(`Family Cases` = round(`Family Cases`, digits = 3)) %>%
+  mutate(`Error Family Cases` = round(`Error Family Cases`, digits = 3)) %>%
+  mutate(`Non-Family Cases` = round(`Non-Family Cases`, digits = 3)) %>%
+  mutate(`Error Non-Family Cases` = round(`Error Non-Family Cases`, digits = 3))
+```
 
 #### Analysis critiques
 
