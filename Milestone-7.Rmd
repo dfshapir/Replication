@@ -98,6 +98,28 @@ stanl3 <- stan_glm(indexA ~ killed + wounded + damaged + displaced + female +
 tidystanl3 <- tidy(stanl3)
 ```
 
+```{r}
+tidytab2 <- cbind(tidystanl1, tidystanl2, tidystanl3)
+
+tidytab2 <- tidytab2[,-c(4, 7)]
+
+tidytab2 <- tidytab2 %>%
+  mutate(Variable = term) %>%
+  mutate(indexRL = estimate) %>%
+  mutate(errorRL = std.error) %>%
+  mutate(indexS = estimate.1) %>%
+  mutate(errorS = std.error.1) %>%
+  mutate(indexA = estimate.2) %>%
+  mutate(errorA = estimate.2) %>%
+  dplyr::select(Variable, indexRL, errorRL, indexS, errorS, indexA, errorA) %>%
+  mutate(indexRL = round(indexRL, digits = 3)) %>%
+  mutate(errorRL = round(errorRL, digits = 3)) %>%
+  mutate(indexS = round(indexS, digits = 3)) %>%
+  mutate(errorS = round(errorS, digits = 3)) %>%
+  mutate(indexA = round(indexA, digits = 3)) %>%
+  mutate(errorA = round(errorA, digits = 3))
+```
+
 Next, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 3 in his data.
 
 ```{r tab3stan, cache = TRUE}
