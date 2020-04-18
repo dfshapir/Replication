@@ -77,7 +77,7 @@ My extension is split up into three sections. The first is devoted to Bayesian a
 
 Lazarev has three sections in his code where he utilizes OLS regressions, labeled as Table 2, Table 3 and Table 4 in the data. Tables 2 and 3 are basic linear regressions; Table 4 is a logistic regression. I run Bayesian analysis on these three Tables. 
 
-First, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 2 in his data. I ran stan_glm() on the same variables that Lazarev included, and put the resulting coefficients and error measurements into a gt table for easy readibility.  
+First, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 2 in his data. This table measures how various variables are likely to effect a person's likelihood of choosing Russian Law, Sharia, or Adat. In his paper, Lazarev argues that woman are much more likely to choose Russian law organs than men. Lazarev also includes various other independent variables, in addition to "female," in his regression, which I have included in the Bayesian regression as  well. The dependent variables are Lazarev's respective "indexes." I ran stan_glm() on the same variables that Lazarev included, and put the resulting coefficients and error measurements into a gt table for easy readibility.  
 
 ```{r include = FALSE, cache = TRUE}
 set.seed(9)
@@ -133,7 +133,9 @@ gttable2 <- tidytab2 %>%
 gttable2
 ```
 
-Next, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 3 in his data.
+This table's results do not match Lazarev's results exactly. However, I believe that this is simply because they are different regressions, and because stan_glm() uses sampling, the chances of the stan_glm() coefficients matching the lm() coefficients exactly are very small. All coefficients here fall within the standard error of Lazarev's initial OLS regressions, and no patterns change. As such, I consider these results satisfactory, and believe that the Bayesian regressions confirm and strengthen Lazarev's argument in this table.
+
+Next, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 3 in his paper. Table 3 measures the effect of community victimization by violence in the war and gender on legal preference. Lazarev shows in his paper that not only are women more likely to choose Russian law organs, but the trend becomes even more apparent for women in communities victimized by violence. As such, he includes the "female" variable (for gender), the "com_exposure" variable (for a community's exposure to violence during the Chechen Wars) and the interaction between the two variables. My Bayesian table shows the same variables.
 
 ```{r tab3stan, cache = TRUE}
 set.seed(9)
@@ -173,6 +175,18 @@ tidytab3 <- tidytab3 %>%
   mutate(`Error Sharia` = round(`Error Sharia`, digits = 3)) %>%
   mutate(`Index Adat` = round(`Index Adat`, digits = 3)) %>%
   mutate(`Error Adat` = round(`Error Adat`, digits = 3))
+
+tidytab3$Variable <- recode(tidytab3$Variable, `(Intercept)` = "Intercept",
+                            `com_exposure` = "exposure",
+                            `com_exposure:female` = "exp:female")
+
+gttable3 <- tidytab3 %>% 
+  gt() %>%
+  tab_header(title = "Bayesian Regression of Lazarev Table 3",
+             subtitle = "Data from Egor Lazarev") %>%
+  as_latex()
+
+gttable3
 ```
 
 Finally, I run Bayesian regressions for the variables described in Table 4. 
