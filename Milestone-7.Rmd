@@ -34,6 +34,7 @@ library(lmtest)
 library(ggplot2)
 library(interactions)
 library(tidybayes)
+library(gt)
 ```
 
 # Abstract
@@ -98,7 +99,7 @@ stanl3 <- stan_glm(indexA ~ killed + wounded + damaged + displaced + female +
 tidystanl3 <- tidy(stanl3)
 ```
 
-```{r}
+```{r graphics2}
 tidytab2 <- cbind(tidystanl1, tidystanl2, tidystanl3)
 
 tidytab2 <- tidytab2[,-c(4, 7)]
@@ -110,7 +111,7 @@ tidytab2 <- tidytab2 %>%
   mutate(indexS = estimate.1) %>%
   mutate(errorS = std.error.1) %>%
   mutate(indexA = estimate.2) %>%
-  mutate(errorA = estimate.2) %>%
+  mutate(errorA = std.error.2) %>%
   dplyr::select(Variable, indexRL, errorRL, indexS, errorS, indexA, errorA) %>%
   mutate(indexRL = round(indexRL, digits = 3)) %>%
   mutate(errorRL = round(errorRL, digits = 3)) %>%
@@ -118,6 +119,8 @@ tidytab2 <- tidytab2 %>%
   mutate(errorS = round(errorS, digits = 3)) %>%
   mutate(indexA = round(indexA, digits = 3)) %>%
   mutate(errorA = round(errorA, digits = 3))
+
+gt(tidytab2)
 ```
 
 Next, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 3 in his data.
@@ -152,7 +155,7 @@ tidytab3 <- tidytab3 %>%
   mutate(indexS = estimate.1) %>%
   mutate(errorS = std.error.1) %>%
   mutate(indexA = estimate.2) %>%
-  mutate(errorA = estimate.2) %>%
+  mutate(errorA = std.error.2) %>%
   dplyr::select(Variable, indexRL, errorRL, indexS, errorS, indexA, errorA) %>%
   mutate(indexRL = round(indexRL, digits = 3)) %>%
   mutate(errorRL = round(errorRL, digits = 3)) %>%
@@ -160,6 +163,8 @@ tidytab3 <- tidytab3 %>%
   mutate(errorS = round(errorS, digits = 3)) %>%
   mutate(indexA = round(indexA, digits = 3)) %>%
   mutate(errorA = round(errorA, digits = 3))
+
+gt(tidytab3)
 ```
 
 Finally, I run Bayesian regressions for the variables described in Table 4. 
@@ -207,6 +212,8 @@ tidytab4 <- tidytab4 %>%
   mutate(`Error Family Cases` = round(`Error Family Cases`, digits = 3)) %>%
   mutate(`Non-Family Cases` = round(`Non-Family Cases`, digits = 3)) %>%
   mutate(`Error Non-Family Cases` = round(`Error Non-Family Cases`, digits = 3))
+
+gt(tidytab4)
 ```
 
 #### Analysis critiques
