@@ -36,6 +36,7 @@ library(interactions)
 
 # Abstract
 
+Lazarev (2019) uses data describing individuals' choice between Russian state law, sharia law and customary law (adat) in Chechnya to show that gender can play a large role in societal splits in post-conflict societies. I was able to replicate all of the author's results. In my extension to Lazarev's paper, used the rstanarm package in R to check Lazarev's analysis with Bayesian regression, and the results confirmed the author's findings. I also pointed out certain areas where I disagreed somewhat with Lazarev's analysis and where I felt that the paper could improve. This paper's successful replication of Lazarev's findings helps strengthen Lazarev's argument about the role of gender in choice of legal organ, and my additional comments on Lazarev's anaylsis help to further discussion about postwar Chechnya and post-conflict society as a whole.
 
 # Paper Overview and Introduction
 
