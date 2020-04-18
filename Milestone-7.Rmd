@@ -119,6 +119,50 @@ tidystank3 <- tidy(stank3)
 ```
 
 ```{r}
+tidytab3 <- cbind(tidystank1, tidystank2, tidystank3)
+
+tidytab3 <- tidytab3[c(1:3, 27),-c(4, 7)]
+
+tidytab3 <- tidytab3 %>%
+  mutate(Variable = term) %>%
+  mutate(indexRL = estimate) %>%
+  mutate(errorRL = std.error) %>%
+  mutate(indexS = estimate.1) %>%
+  mutate(errorS = std.error.1) %>%
+  mutate(indexA = estimate.2) %>%
+  mutate(errorA = estimate.2) %>%
+  dplyr::select(Variable, indexRL, errorRL, indexS, errorS, indexA, errorA) %>%
+  mutate(indexRL = round(indexRL, digits = 3)) %>%
+  mutate(errorRL = round(errorRL, digits = 3)) %>%
+  mutate(indexS = round(indexS, digits = 3)) %>%
+  mutate(errorS = round(errorS, digits = 3)) %>%
+  mutate(indexA = round(indexA, digits = 3)) %>%
+  mutate(errorA = round(errorA, digits = 3))
+```
+
+Finally, I run Bayesian regressions for the variables described in Table 4. 
+
+```{r tab4stan, cache = TRUE}
+set.seed(9)
+reg_data <- read.csv2("raw-data/wp_data_courts.csv")
+
+famdata <- reg_data[which(reg_data$family==1),]
+nonfamdata <- reg_data[which(reg_data$family==0),]
+
+stanm1 <- stan_glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data = reg_data, refresh = 0)
+tidystanm1 <- tidy(stanm1)
+
+stanm2 <- stan_glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data=famdata, refresh = 0)
+tidystanm2 <- tidy(stanm2)
+
+stanm3 <- stan_glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data=nonfamdata, refresh = 0)
+tidystanm3 <- tidy(stanm3)
 
 ```
 
