@@ -189,7 +189,9 @@ gttable3 <- tidytab3 %>%
 gttable3
 ```
 
-Finally, I run Bayesian regressions for the variables described in Table 4. 
+As with the previous table, stan_glm() outputs very similar coefficients to a regular OLS regression, strengthening Lazarev's conclusions.
+
+Finally, I run Bayesian regressions for the variables described in Table 4. Table 4 in Lazarev's paper is constructed a bit differently than the other two tables, as Lazarev uses the istez_females variables as his dependent variable, which is binary ("itsets" meaning "plaintiff" in Russian). As such, Lazarev constructs three logistic regressions, measuring how likely it is that the plaintiff is female in a) all court cases in Chechnya over a given time period with individual plaintiffs, b) all of these cases that deal with family-related matters, and c) all of these cases that do not deal with family-related matters. In the article, we see that women are much more likely to be the plaintiff in family-related cases that in non-family-related cases, and that factors such as community vicitimization enhance this effect. I ran Bayesian regressions on Lazarev's data for these factors, and got similar results, showing again the strength of Lazarev's results.
 
 ```{r tab4stan, cache = TRUE}
 set.seed(9)
@@ -217,7 +219,7 @@ tidystanm3 <- tidy(stanm3)
 ```{r tidytab4}
 tidytab4 <- cbind(tidystanm1, tidystanm2, tidystanm3)
 
-tidytab4 <- tidytab4[,-c(4, 7)]
+tidytab4 <- tidytab4[1:6,-c(4, 7)]
 
 tidytab4 <- tidytab4 %>%
   mutate(Variable = term) %>%
@@ -225,16 +227,27 @@ tidytab4 <- tidytab4 %>%
   mutate(`Error All Cases` = std.error) %>%
   mutate(`Family Cases` = estimate.1) %>%
   mutate(`Error Family Cases` = std.error.1) %>%
-  mutate(`Non-Family Cases` = estimate.2) %>%
-  mutate(`Error Non-Family Cases` = estimate.2) %>%
-  dplyr::select(Variable, `All Cases`, `Error All Cases`, `Family Cases`, `Error Family Cases`, `Non-Family Cases`, `Error Non-Family Cases`) %>%
+  mutate(`Other Cases` = estimate.2) %>%
+  mutate(`Error Other Cases` = std.error.2) %>%
+  dplyr::select(Variable, `All Cases`, `Error All Cases`, `Family Cases`, `Error Family Cases`, `Other Cases`, `Error Other Cases`) %>%
   mutate(`All Cases` = round(`All Cases`, digits = 3)) %>%
   mutate(`Error All Cases` = round(`Error All Cases`, digits = 3)) %>%
   mutate(`Family Cases` = round(`Family Cases`, digits = 3)) %>%
   mutate(`Error Family Cases` = round(`Error Family Cases`, digits = 3)) %>%
-  mutate(`Non-Family Cases` = round(`Non-Family Cases`, digits = 3)) %>%
-  mutate(`Error Non-Family Cases` = round(`Error Non-Family Cases`, digits = 3))
+  mutate(`Other Cases` = round(`Other Cases`, digits = 3)) %>%
+  mutate(`Error Other Cases` = round(`Error Other Cases`, digits = 3))
 
+tidytab4$Variable <- recode(tidytab4$Variable, `(Intercept)` = "Intercept",
+                            `com_exposure` = "exposure",
+                            `pop_fem_share` = "fem_share")
+
+gttable4 <- tidytab4 %>% 
+  gt() %>%
+  tab_header(title = "Bayesian Regression of Lazarev Table 4",
+             subtitle = "Data from Egor Lazarev") %>%
+  as_latex()
+
+gttable4
 ```
 
 #### Analysis critiques
