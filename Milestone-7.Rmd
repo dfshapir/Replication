@@ -11,6 +11,7 @@ link_citations: true
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(stargazer)
+library(rstanarm)
 library(bookdown)
 library(foreign)
 library(plyr)
@@ -32,6 +33,7 @@ library(sandwich)
 library(lmtest)
 library(ggplot2)
 library(interactions)
+library(tidybayes)
 ```
 
 # Abstract
@@ -64,11 +66,62 @@ Aside from Allenova's and Lokshina's contributions, however, very little scholar
 
 # Replication
 
-As stated previously, I was able to replicate every aspect of Lazarev's paper. The only aspect of Lazarev's paper that was not perfectly replicable was the graphic that he labeled as Table 2 (in this paper labeled as Table 1). In this regression table, a few coefficients were around .001 off from Lazarev's original numbers. However, none of these slight discrepancies in any way change Lazarev's main conclusions. Overall, my replication was a success, and Lazarev's data-based conclusions hold steady with outside evaluation. As such, in my extension, I focus on ensuring that the results of Lazarev's regressions hold up under Bayesian analysis and critique Lazarev's analysis and data choices. I keep my discussion of reprocibility to a minimum in this section.
+As stated previously, I was able to replicate every aspect of Lazarev's paper. The only aspect of Lazarev's paper that was not perfectly replicable was the graphic that he labeled as Table 2 (in this paper labeled as Table 1). In this regression table, a few coefficients were around .001 off from Lazarev's original numbers. However, none of these slight discrepancies in any way change Lazarev's main conclusions. Overall, my replication was a success, and Lazarev's data-based conclusions hold steady with outside evaluation. As such, in my extension, I focus on ensuring that the results of Lazarev's regressions hold up under Bayesian analysis and critique Lazarev's analysis and data choices. I keep my discussion of reproducibility to a minimum in this section.
 
 # Extension
 
-My extension is split up into two separate critiques: analysis critiques and data critiques. These two categories overlap significantly, but I believe that splitting them up in such a way provides structure to the paper. In general, I believe that Lazarev comes to many convincing conclusions and uses data well to support his findings. Nonetheless, there are a few areas in which I believe that Lazarev could have been more thorough and/or where I believe that literature does not support Lazarev’s findings.
+My extension is split up into three sections. The first is devoted to Bayesian analysis, in which I run stan_glm() on all of Lazarev's OLS regressions to check if Lazarev's conclusions hold up. Next, I address some potential issues with Lazarev's analysis, dividing my evaluation into two separate critiques: analysis critiques and data critiques. These two categories overlap significantly, but I believe that splitting them up in such a way provides structure to the paper. In general, I believe that Lazarev comes to many convincing conclusions and uses data well to support his findings. Nonetheless, there are a few areas in which I believe that Lazarev could have been more thorough and/or where I believe that literature does not support Lazarev’s findings.
+
+### Bayesian Regression
+
+Lazarev has three sections in his code where he utilizes OLS regressions, labeled as Table 2, Table 3 and Table 4 in the data. Tables 2 and 3 are basic linear regressions; Table 4 is a logistic regression. I run Bayesian analysis on these three Tables. 
+
+First, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 2 in his data. 
+
+```{r include = FALSE, cache = TRUE}
+set.seed(9)
+upd_data <- read.csv2("raw-data/upd_wp_data_survey.csv")
+
+stanl1 <- stan_glm(indexRL ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data, refresh = 0) 
+
+tidystanl1 <- tidy(stanl1)
+
+stanl2 <- stan_glm(indexS ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data, refresh = 0) 
+
+tidystanl2 <- tidy(stanl2)
+
+stanl3 <- stan_glm(indexA ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data, refresh = 0) 
+
+tidystanl3 <- tidy(stanl3)
+```
+
+Next, I show the Bayesian regression equivalent for the figure that Lazarev labels as Table 3 in his data.
+
+```{r tab3stan, cache = TRUE}
+set.seed(9)
+stank1 <- stan_glm(indexRL ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data, refresh = 0)
+tidystank1 <- tidy(stank1)
+
+stank2 <- stan_glm(indexS ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data, refresh = 0)
+tidystank2 <- tidy(stank2)
+
+stank3 <- stan_glm(indexA ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = upd_data, refresh = 0)
+tidystank3 <- tidy(stank3)
+```
+
+```{r}
+
+```
+
 
 #### Analysis critiques
 
