@@ -146,7 +146,11 @@ draws <- spread_draws(stanl1, `(Intercept)`, `female`)
 ggplot(upd_data, aes(x = female, y = indexRL)) +
   geom_jitter(width = 0.2) + 
   geom_abline(data = draws, aes(intercept = `(Intercept)`, slope = female), size = 0.1, alpha = 0.08, color = "skyblue") +
-  geom_abline(intercept = model_intercept, slope = model_slope)
+  geom_abline(intercept = model_intercept, slope = model_slope) +
+  labs(title = "Relationship of Gender and Likelihood of Choosing Russian Law",
+       subtitle = "Data from Egor Lazarev",
+       x = "Gender (1 = Female, 0 = Male)",
+       y = "Russian Law Choice Index")
 ```
 
 
