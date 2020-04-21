@@ -501,6 +501,7 @@ figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") +
 figure5
 ```
 
+\pagebreak
 This table was originally labeled as Table 3 in Lazarev's code; in the paper, it is labeled as Table 4.
 
 ```{r include = FALSE}
@@ -560,12 +561,11 @@ stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
 \pagebreak
 
 
-The next page displays a series of graphs that show up as Figure 2 in the article. Lazarev created a function that grouped them all together into one graphic; however, this function did not work as planned for me, so I used the ggarrange() function in the ggpubr package instead.
+This page displays a series of graphs that show up as Figure 2 in the article. I used the ggarrange() function in the ggpubr package.
 ```{r include = FALSE}
 figdat <- read.csv2("raw-data/wp_data_raw.csv")
 ```
 
-\pagebreak
 ```{r, fig.width = 10, fig.height = 12}
 h1 <- ggplot(data=figdat[!is.na(figdat$Q1),], 
              aes(factor(Q1))) + 
