@@ -8,8 +8,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-# I made echo = TRUE because I want for Preceptor to be able to see my code comments.
-
 library(foreign)
 library(plyr)
 library(dplyr)
@@ -41,7 +39,7 @@ library(interactions)
 data <- read.csv2("raw-data/wp_data_raw.csv")
 stargazer(data)
 
-## I read up on the stargazer package; this essentially converts the csv into a table you can copy into Microsoft Word and edit.
+## This package essentially converts the csv into a table you can copy into Microsoft Word and edit.
 ```
 
 ## Function 
@@ -173,7 +171,7 @@ library(Hmisc)
 x<-cbind(data$edu,data$female,data$age,data$urban, data$urban_Soviet, data$knowRL, data$unemployed)
 datax<-as.data.frame(x)
 
-# The author has to figure out how to deal with missing data. So he uses the missing_data.frame() call to prepare the data for multiple imputation, which he does by calling the mi() command. The complete() call completes the process (1 being the number of multiply imputed data frames to return) so that he has a new dataframe that he can work with later, called newdata. I had to define the complete() call as mi::complete, because there is an identical call in the tidyr package that does not understand how to work with multiple imputation, and that was being used as the default. I have used this method in other similar areas of the code as well. He then saves the imputed V1 column (a column that previously had missing data) as the edufull column in the original data set. The mi package is an interesting one that I would like to explore further. 
+# The author has to figure out how to deal with missing data. So he uses the missing_data.frame() call to prepare the data for multiple imputation, which he does by calling the mi() command. The complete() call completes the process (1 being the number of multiply imputed data frames to return) so that he has a new dataframe that he can work with later, called newdata. I had to define the complete() call as mi::complete, because there is an identical call in the tidyr package that does not understand how to work with multiple imputation, and that was being used as the default. I have used this method in other similar areas of the code as well. He then saves the imputed V1 column (a column that previously had missing data) as the edufull column in the original data set.  
 
 mdf<-missing_data.frame(datax)
 imp.mi<-mi(mdf)
@@ -213,13 +211,13 @@ upd_data <- read.csv2("raw-data/upd_wp_data_survey.csv")
 ## Table1
 
 ```{r}
-# The author constructs a series of regressions, aimed to elucidate each variable's effect on the predefined tendencies to prefer either Russian law (indexRL), sharia law (indexS), or adat (indexA). By running the regressions, the author shows that the "female" variable is by far the most robust of the tested variables for indexRL (Russian law). Many of the other variables for this regression tell us absolutely nothing -- the standard error for many is greater in absolute value than the actual estimate itself. All of the data shown in these regressions here are then put into a copyable table form by stargazer() and shown later. **NOTE** this chunk, while labeled as "table 1" is actually shown in the article as Table 2. It is also worth noting that the regressions here published slightly different numbers than shown in Lazarev's table. The general trends are still the same and the numbers are almost the same, so it's not like Lazarev is wrong -- my guess is that it's something small in the code. I wil mess around with this some more and see if I can get his exact numbers. 
+# The author constructs a series of regressions, aimed to elucidate each variable's effect on the predefined tendencies to prefer either Russian law (indexRL), sharia law (indexS), or adat (indexA). By running the regressions, the author shows that the "female" variable is by far the most robust of the tested variables for indexRL (Russian law). Many of the other variables for this regression tell us absolutely nothing -- the standard error for many is greater in absolute value than the actual estimate itself. All of the data shown in these regressions here are then put into a copyable table form by stargazer() and shown later. **NOTE** this chunk, while labeled as "table 1" is actually shown in the article as Table 2. It is also worth noting that the regressions here published slightly different numbers than shown in Lazarev's table. The general trends are still the same and the numbers are almost the same, so Lazarev is not wrong, per se.
 
 m1 <- lm(indexRL ~ killed + wounded + damaged + displaced + female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
 summary(m1) 
 
-# The second regression is set up in the same way. The summary(m2) shows us that unemployment has the largest impact on someone's likelihood to prefer sharia. The author does not discuss this in great detail, which I think is a mistake: it's a pretty well-known fact that Wahhabist mercenaries targeted unemployed men to join their ranks and attend their informal madrasas. The fact that these people prefer sharia, according to this study, fits with the broader understanding of the impact of Islamist fighters on the conflict and the strategies they took to consolidate power.
+# The second regression is set up in the same way. 
 
 m2 <- lm(indexS ~ killed + wounded + damaged + displaced + female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=upd_data) 
@@ -236,7 +234,7 @@ stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimizat
           type="html",
           out="table1.doc")
 
-# I understand that Lazarev did not focus so much on determinants for preferring other forms of law, because it is not his main argument, but these in themselves are worth exploring further, even though they only really confirm the pre-existing literature. For one, focusing on sharia as more than just "patriarchal," but also as a tool directed toward the less-well-off, would be interesting and useful. I also already am starting to complain about some of the intricacies of his argument not tied to his code, but I'll save that for my paper. 
+# I understand that Lazarev did not focus so much on determinants for preferring other forms of law, because it is not his main argument, but these in themselves are worth exploring further, even though they only really confirm the pre-existing literature. For one, focusing on sharia as more than just "patriarchal," but also as a tool directed toward the less-well-off, would be interesting and useful. 
 ```
 
 ## Table 2
@@ -245,7 +243,7 @@ stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimizat
 
 # This set of regressions is meant to address the problem of victimization at the community level. By putting one of the variables as com_exposure*female, Lazarev estimates the effect of the interaction between community victimization and gender on the choice of law. m1 represents the effect on choice of Russian state law, m2 represents the effect on choice of sharia, and m3 represents the effect on choice of adat. In the regressions, there are coefficients for the com_exposure and female variables separately, as well as the interaction between the two. He also includes the rayon variable. A "rayon" is essentially the Russian administrative version of something between a municipality and a county -- they're usually smaller than US counties but contain multiple towns. Kurchaloi rayon, for example, would likely also include the town of Geldagan and Mairtup. He does this so that he can properly measure community victimization, as he shows on pages 688 and 689 and in Figure 4. 
 
-# Lazarev explains that there are a lot of difficulties and a lot of factors that go into establishing why a community has been exposed to violence, and he worries about the data being endogenous. So he adds in a couple of other variables that help define geography -- distance from Groznyy (the capital, which everyone was trying to control) and altitude. I think that altitude is a much more important variable here; the culture of mountainous Chechnya is much different than that of lowland Chechnya. Furthermore, in the course of the war, a lot of areas that are near Groznyy were nearly untouched by the war, because they were occupied by forces loyal to the federal center from very close to the beginning. The Kadyrov clan hails from Kurchaloi rayon and controlled Gudermes along with the Yamadayev family, thereby ensuring safety for these areas, as both families allied with the Russian center early on in the Second Chechen War. Both areas were targeted during the First Chechen War, mitigating this security somewhat, but this is an important distinction to make. While Lazarev doesn't analyze these intricacies very closely, the altitude factor (upland Chechnya was poorer and almost entirely rebel-held, while much of the valleys ended up turning toward the center) is definitely important. I have more complaints about this variable being used as a predictor, but I will save that for my analysis. He adds other variables in here too, such as Russian population. Maybe being exposed to ethnic Russians makes Chechens more or less likely to choose sharia or traditional law. 
+# Lazarev explains that there are a lot of difficulties and a lot of factors that go into establishing why a community has been exposed to violence, and he worries about the data being endogenous. So he adds in a couple of other variables that help define geography -- distance from Groznyy (the capital, which everyone was trying to control) and altitude. I think that altitude is a much more important variable here; the culture of mountainous Chechnya is much different than that of lowland Chechnya. Furthermore, in the course of the war, a lot of areas that are near Groznyy were nearly untouched by the war, because they were occupied by forces loyal to the federal center from very close to the beginning. The Kadyrov clan hails from Kurchaloi rayon and controlled Gudermes along with the Yamadayev family, thereby ensuring safety for these areas, as both families allied with the Russian center early on in the Second Chechen War. Both areas were targeted during the First Chechen War, mitigating this security somewhat, but this is an important distinction to make. While Lazarev doesn't analyze these intricacies very closely, the altitude factor (upland Chechnya was poorer and almost entirely rebel-held, while much of the valleys ended up turning toward the center) is definitely important. He adds other variables in here too, such as Russian population. Maybe being exposed to ethnic Russians makes Chechens more or less likely to choose sharia or traditional law. 
 
 m1 <- lm(indexRL ~ com_exposure*female + 
            as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
@@ -376,11 +374,11 @@ predict(m1, newdata8, type = "response")
 ```{r}
 courts_data <- read.csv2("raw-data/wp_data_courts.csv")
 
-# Originally, Lazarev was just lazy and made all of his csv read-ins be entitled "data." To avoid confusion, I changed the names. 
+# Originally, Lazarev made all of his csv read-ins be entitled "data." To avoid confusion, I changed the names. 
 
-## Last names of plaintiffs are reducted from these data for privacy reasons [LAZAREV NOTE]
+## Last names of plaintiffs are redacted from these data for privacy reasons [LAZAREV NOTE]
 
-# In the below bit of code, Lazarev splits the data frame into two separate dataframes, one where the "family" variable is equal to 1, and one where it is not. The "family" variable indicates if the case is related to family disputes or not. A little over 60% of cases (shown by the 6144 rows in famdata in comparison to 9359 in data) are.
+# In the below bit of code, Lazarev splits the data frame into two separate dataframes, one where the "family" variable is equal to 1, and one where it is not. The "family" variable indicates if the case is related to family disputes or not. A little over 60% of cases (shown by the 6144 rows in famdata in comparison to 9359 in data) are related.
 
 famdata <- courts_data[which(courts_data$family==1),]
 nonfamdata <- courts_data[which(courts_data$family==0),]
@@ -752,14 +750,14 @@ h10 <- ggplot(data=figdat[!is.na(figdat$Q20),],
 
 figure2 <- multiplot(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, cols = 2)
 
-# The above code finally uses the multiplot() function that Lazarev created in the code chunk above all of these plots.
+# The above code finally uses the multiplot() function that Lazarev created in the code chunk above all of these plots. Works very similarly to the ggarrange() function in the ggpubr package.
 ```
 
 ## Figure 3
 
 ```{r}
 
-# Starts on page 685. Reads in survey data (original or updated? I'm personally uncertain; will require some messing around). **OVERALL: WOULD LIKE TO DISCUSS THIS SECTION, SOME THINGS I'M NOT SURE I UNDERSTAND. 
+# Starts on page 685. Reads in survey data.
 
 fig3dat <- read.csv2("raw-data/upd_wp_data_survey.csv")
 
@@ -793,7 +791,7 @@ n1 <- tapply(fig3dat$indexRL, fig3dat$female, length2, na.rm = T)
 
 se1 <- round(sds1/sqrt(n1), digits=3)
 
-# qt() is the quantile function. You can use it to find out what the t-score is of the pth quantile (in this case, the 97.5th quantile). df stands for degress of freedom. In this case, it is equal to the length minus 1. This is typical, as 1 is the number of parameters we need, and the typical equation is the length minus number of parameters. He then multiplies it by the standard error. To be honest, I have no idea what's going on here. If qt() gave was just the equation for t-score, then maybe he would be multiplying by the standard error to cancel out the standard error in the denominator to just get the X - population mean number. But that doesn't make sense to me and doesn't look right according to the numbers in the resulting table. When I divided error1 by the standard error, I got 2 for each, every time. This makes sense, given that the error number is always 2x the se, but I do not know what this means/why we need it. Interestingly, it gets used later as the determinant for the error bar in the graph...is it a more useful version of standard error? 
+# qt() is the quantile function. You can use it to find out what the t-score is of the pth quantile (in this case, the 97.5th quantile). df stands for degress of freedom. In this case, it is equal to the length minus 1. This is typical, as 1 is the number of parameters we need, and the typical equation is the length minus number of parameters. He then multiplies it by the standard error. This gets used later as the determinant for the error bar in the graph.
 
 error1 <- round((qt(0.975,df=n1-1)*se1), digits = 3)
 
@@ -880,7 +878,7 @@ figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
 ```{r}
 fig5data <- read.csv2("raw-data/upd_wp_data_survey.csv")
 
-# Again, very much irritates me that he writes over his code and then reads it in again. I need to figure out if this is the original survey data, or the edited surey data. A message is even thrown due to this issue when I read it in now. 
+# Again, very much irritates me that he writes over his code and then reads it in again. I have at least changed what the data is called. 
 
 fig5data$victimized[fig5data$com_exposure=='0']<-'nonvictimized'
 fig5data$victimized[fig5data$com_exposure=='1']<-'victimized'
@@ -917,7 +915,7 @@ total <- read.csv2("raw-data/wp_data_Chechnya_Ingushetia.csv")
 ftotal <- total[which(total$data.female==1),]
 mtotal <- total[which(total$data.female==0),]
 
-# The below two sets of code are exactly the same as in the code chunk a little ways up that I already put in a lot of comments for. This time, there are only two of these chunks instead of three, because the point is to show support for Russian law as it compares across two republics: Chechnya and Ingushetia, instead of comparing across three types of law (Russian, sharia and adat). I would personally be curious to see what the data shows about sharia and adat as well for these comparisons; this may be something I dive into in my replication. 
+# The below two sets of code are exactly the same as in the code chunk a little ways up that I already put in a lot of comments for. This time, there are only two of these chunks instead of three, because the point is to show support for Russian law as it compares across two republics: Chechnya and Ingushetia, instead of comparing across three types of law (Russian, sharia and adat). I would personally be curious to see what the data shows about sharia and adat as well for these comparisons.
 
 means1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, mean, na.rm = T), digits=3)
 sds1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, sd, na.rm = T), digits=3)
