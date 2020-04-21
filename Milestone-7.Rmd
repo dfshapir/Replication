@@ -703,10 +703,7 @@ ggarrange(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10,
 ```
 
 \pagebreak
-
-
-\pagebreak
-The final graph that the author uses is this comparison of how men and women view Russian state law in Chechnya and Ingushetia, comparatively. The replicated graph matches the one in the article. 
+This graph compares how men and women view Russian state law in Chechnya and Ingushetia, comparatively.
 ```{r}
 total <- read.csv2("raw-data/wp_data_Chechnya_Ingushetia.csv")
 
@@ -751,6 +748,7 @@ figure6 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
   xlab("") +
   ylab("") +
   ggtitle("Gender Gaps in Support for State Law in Chechnya and Ingushetia") +
+  labs(caption = "This graph shows the final aspect of Lazarev's analysis -- his comparison of choices of Russian \nlaw by gender between Chechnya and Ingushetia. In Chechnya, we see that significantly more women than men \nchoose Russian state law, while in Ingushetia, this pattern is not present: in fact, by Lazarev's analysis, \nmen seem a bit more likely to choose state law than women. Lazarev describes Ingushetia and Chechnya as \nalmost identical regions -- except for Chechnya's conflict experience. He therefore uses this analysis to \nback up his point that conflict experience has exacerbated gender splits, as in his view, conflict is \nthe only major factor dividing Ingushetia and Chechnya.") +
   coord_cartesian(ylim=c(0, .5))+  
   scale_y_continuous(breaks=seq(0, 0.5, .1)) +
   scale_fill_manual(name="Region", # Legend label, use darker colors
@@ -764,7 +762,8 @@ figure6 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
         axis.title.x = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.background = element_blank())
+        panel.background = element_blank(),
+        plot.caption = element_text(hjust = 0.5))
 figure6
 ```
 
