@@ -394,7 +394,7 @@ figure3
 ```
 \pagebreak
 
-This next figure is labeled as Table 2 in the article. The results are not quite perfect, but they are very, very close to those that Lazarev cites. There are no discrepancies in trends between the replicated table and the table in the data. 
+This next figure is labeled as Table 2 in the article. 
 
 ```{r include = FALSE}
 upd_data <- read.csv2("raw-data/upd_wp_data_survey.csv")
@@ -418,8 +418,9 @@ stargazer(l1, l2, l3, title="OLS Regression Analysis of the Impact of Victimizat
           header = FALSE)
 ```
 
-\pagebreak
-This table was labeled as Table 3 in the article.
+*This table confirms and expands upon the data presented in FIGURE 3. The coefficients corresponding to the "female" variable correspond to the trends portrayed graphically, showing that being women are significantly more likely to choose state law than men, slightly less likely than men to choose sharia, and significantly less likely to choose adat than men. The table also accounts for other variables: if an individual had a relative killed or wounded, if the person has been displaced, and other variables. The regression table also shows how income, education, unemployment and urbanity affect choice of one law style over another.*
+
+This next table was labeled as Table 3 in the article.
 
 ```{r tab3prep, include = FALSE}
 k1 <- lm(indexRL ~ com_exposure*female + 
@@ -470,8 +471,36 @@ stargazer(k1, k2, k3, se = list(coeftest(k1, vcov. = k1_vcov)[,2],
 # Formatted to make it look more like his table
 
 ```
+*This table moves the narrative toward Lazarev's next argument, namely, that the pattern of women choosing to turn to state courts for legal disputes rather than sharia or customary courts is exacerbated  by the level to which a region was aﬀected by violence during the Chechen wars. Conﬂict provided women with more opportunity to pursue their interests through oﬃcial law. The table shows that when a given person is female and lives in a community affected by violence, the person is 6 percent more likely to choose state law, and almost 7 percent less likely to choose sharia (with a certain degree of error). Both of these numbers show how the conflict experience, in Lazarev's view, plays a role in gendered legal choice.*
 
-\pagebreak
+This next graph is Figure 5, showing differences in victimization and nonvictimization. 
+
+```{r include = FALSE}
+fig5data <- read.csv2("raw-data/upd_wp_data_survey.csv")
+
+fig5data$victimized[fig5data$com_exposure=='0']<-'nonvictimized'
+fig5data$victimized[fig5data$com_exposure=='1']<-'victimized'
+
+fig5data$gender[fig5data$female=='0']<-'male'
+fig5data$gender[fig5data$female=='1']<-'female'
+
+m1 <- lm(indexRL ~ victimized*gender + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = fig5data)
+summary(m1)
+
+figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") + 
+  labs(x="", y = "", title = "FIGURE 5: Interaction Plot for the Effects of Community \nVictimization and Gender on Support for State Law",
+       caption = "This plot shows the difference in the gender split regarding support for state law between \ncommunities that were victimized and not victimized by violence. In communities victimized by \nviolence, Lazarev shows that women are much more likely to choose state law than men are, and the \ndivide between genders is significantly greater than the divide in communities that have not been \nvictimized by violence. This graph corresponds with Table 3, which shows the interaction \nbetween the 'com_exposure' variable and the 'female' variable. Not only is Lazarev arguing that \nwomen are more likely to choose state law than men -- he is also showing that being exposed to \nviolence has an effect as well, as split is wider in victimized areas than non-victimized ones. \nThis, in his eyes, shows support for the idea that much of the split is due to conflict.") +
+  scale_color_manual("gender", values=c('grey20','grey60'))+
+  scale_fill_manual("gender",values=c('grey30','grey80')) +
+  theme(plot.caption = element_text(hjust = 0.5))
+``` 
+
+```{r}
+figure5
+```
+
 This table was originally labeled as Table 3 in Lazarev's code; in the paper, it is labeled as Table 4.
 
 ```{r include = FALSE}
@@ -530,11 +559,6 @@ stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
 
 \pagebreak
 
-Above is a screenshot of the actual table in Lazarev's paper. There are some differences in formatting, but all of the numbers that I got match the numbers in the table. Lazarev removes all of the coefficients for individual years and simply puts "yes" for "Year fixed effects" in every column. Also, Lazarev cleans up some of his variable names for purposes of readability. The numbers, however, match.
-
-```{r image, fig.cap = "Lazarev Image", out.width = '100%'}
-knitr::include_graphics("lazarev_m5_screenshot.png")
-```
 
 The next page displays a series of graphs that show up as Figure 2 in the article. Lazarev created a function that grouped them all together into one graphic; however, this function did not work as planned for me, so I used the ggarrange() function in the ggpubr package instead.
 ```{r include = FALSE}
@@ -678,33 +702,7 @@ ggarrange(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10,
 ```
 
 \pagebreak
-This next graph is Figure 5, showing differences in victimization and nonvictimization. The graph looks exactly like the one in the paper.
 
-```{r include = FALSE}
-fig5data <- read.csv2("raw-data/upd_wp_data_survey.csv")
-
-fig5data$victimized[fig5data$com_exposure=='0']<-'nonvictimized'
-fig5data$victimized[fig5data$com_exposure=='1']<-'victimized'
-
-fig5data$gender[fig5data$female=='0']<-'male'
-fig5data$gender[fig5data$female=='1']<-'female'
-
-m1 <- lm(indexRL ~ victimized*gender + 
-           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
-           russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = fig5data)
-summary(m1)
-
-figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") + 
-  labs(x="", y = "", title = "FIGURE 5: Interaction Plot for the Effects of Community \nVictimization and Gender on Support for State Law",
-       caption = "This plot shows the difference in the gender split regarding support for state law between \ncommunities that were victimized and not victimized by violence. In communities victimized by \nviolence, Lazarev shows that women are much more likely to choose state law than men are, and the \ndivide between genders is significantly greater than the divide in communities that have not been \nvictimized by violence. This graph corresponds with Table 3, which shows the interaction \nbetween the 'com_exposure' variable and the 'female' variable. Not only is Lazarev arguing that \nwomen are more likely to choose state law than men -- he is also showing that being exposed to \nviolence has an effect as well, as split is wider in victimized areas than non-victimized ones. \nThis, in his eyes, shows support for the idea that much of the split is due to conflict.") +
-  scale_color_manual("gender", values=c('grey20','grey60'))+
-  scale_fill_manual("gender",values=c('grey30','grey80')) +
-  theme(plot.caption = element_text(hjust = 0.5))
-``` 
-
-```{r}
-figure5
-```
 
 \pagebreak
 The final graph that the author uses is this comparison of how men and women view Russian state law in Chechnya and Ingushetia, comparatively. The replicated graph matches the one in the article. 
