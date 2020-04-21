@@ -536,7 +536,7 @@ Above is a screenshot of the actual table in Lazarev's paper. There are some dif
 knitr::include_graphics("lazarev_m5_screenshot.png")
 ```
 
-The next page displays a series of graph that is part of a series of ten graphs that show up as one graphic (Figure 2) in the article. Lazarev created a function that grouped them all together into one graphic; however, this function did not work as planned for me, so I split it up into 3 separate graphics using the ggarrange() function in the ggpubr package.
+The next page displays a series of graphs that show up as Figure 2 in the article. Lazarev created a function that grouped them all together into one graphic; however, this function did not work as planned for me, so I used the ggarrange() function in the ggpubr package instead.
 ```{r include = FALSE}
 figdat <- read.csv2("raw-data/wp_data_raw.csv")
 ```
@@ -695,9 +695,11 @@ m1 <- lm(indexRL ~ victimized*gender +
 summary(m1)
 
 figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") + 
-  labs(x="", y = "", title = "Interaction Plot for the Effects of Community Victimization \nand Gender on Support for State Law") +
+  labs(x="", y = "", title = "FIGURE 5: Interaction Plot for the Effects of Community \nVictimization and Gender on Support for State Law",
+       caption = "This plot shows the difference in the gender split regarding support for state law between \ncommunities that were victimized and not victimized by violence. In communities victimized by \nviolence, Lazarev shows that women are much more likely to choose state law than men are, and the \ndivide between genders is significantly greater than the divide in communities that have not been \nvictimized by violence. This graph corresponds with Table 3, which shows the interaction \nbetween the 'com_exposure' variable and the 'female' variable. Not only is Lazarev arguing that \nwomen are more likely to choose state law than men -- he is also showing that being exposed to \nviolence has an effect as well, as split is wider in victimized areas than non-victimized ones. \nThis, in his eyes, shows support for the idea that much of the split is due to conflict.") +
   scale_color_manual("gender", values=c('grey20','grey60'))+
-  scale_fill_manual("gender",values=c('grey30','grey80'))
+  scale_fill_manual("gender",values=c('grey30','grey80')) +
+  theme(plot.caption = element_text(hjust = 0.5))
 ``` 
 
 ```{r}
