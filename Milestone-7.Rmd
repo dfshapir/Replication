@@ -473,6 +473,7 @@ stargazer(k1, k2, k3, se = list(coeftest(k1, vcov. = k1_vcov)[,2],
 ```
 *This table moves the narrative toward Lazarev's next argument, namely, that the pattern of women choosing to turn to state courts for legal disputes rather than sharia or customary courts is exacerbated  by the level to which a region was aﬀected by violence during the Chechen wars. Conﬂict provided women with more opportunity to pursue their interests through oﬃcial law. The table shows that when a given person is female and lives in a community affected by violence, the person is 6 percent more likely to choose state law, and almost 7 percent less likely to choose sharia (with a certain degree of error). Both of these numbers show how the conflict experience, in Lazarev's view, plays a role in gendered legal choice.*
 
+\pagebreak
 This next graph is Figure 5, showing differences in victimization and nonvictimization. 
 
 ```{r include = FALSE}
@@ -555,12 +556,12 @@ stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
                                 coeftest(m3, vcov. = m3_vcov)[,2]),
           title = "Predicting Female Plaintiff in Civil Disputes: Binary Logistic Regression",
           type="latex", 
-          header = FALSE)
+          header = FALSE,
+          keep = c("\\bcom_exposure\\b", "\\burban\\b", "\\bmountainous\\b", "\\bruss_pop\\b", "\\bpop_fem_share\\b", "\\bConstant\\b"))
 ```
+*This table shows various predictors for whether or not the plaintiff will be female in a given state law court case ("istez_females" means female plaintiffs). Lazarev takes all court cases over a given postwar period in Chechnya that have an individual plaintiff and separates them into three categories. (1) shows results for all cases, (2) shows results for that subset that deals with "family issues" and (3) deals with the remainder, that is, the cases that are not family-related. Referring to this table, Lazarev argues that "all else being equal, in more victimized communities, the likelihood of having a female plaintiff is significantly higher than in less-victimized ones. Transformation of the logistic regression coefficient suggests that the difference is approximately 12 percentage points, which is substantially large." Lazarev also notes through this graph that simple male/female demographics (labeled as pop_fem_share) do not have predictive power, as error is very high. Thus, Lazarev shows through this table that there is a positive relationship between community victimization and subsequent use of state law by women.*
 
 \pagebreak
-
-
 This page displays a series of graphs that show up as Figure 2 in the article. I used the ggarrange() function in the ggpubr package.
 ```{r include = FALSE}
 figdat <- read.csv2("raw-data/wp_data_raw.csv")
