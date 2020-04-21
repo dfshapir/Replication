@@ -35,6 +35,7 @@ library(ggplot2)
 library(interactions)
 library(tidybayes)
 library(gt)
+library(ggpubr)
 ```
 
 # Abstract
@@ -293,7 +294,7 @@ Overall, Lazarev does an excellent job with his data, and his code is easily rep
 \pagebreak
 # Tables and Figures
 
-This section shows my replications of Lazarev's graphs and tables. In this first graphic, I use Lazarev's data to show gender-based trends in choice of legal structure in Chechnya. Lazarev makes the same graph in his paper; however, I made sure to format mine in a more "beautiful" manner. The graph shows how men and women differ in their respective likelihoods to choose Russian state law, sharia, and adat. The error bars are included as well to show the uncertainty around the means. The graph is labeled in Lazarev's piece as FIGURE 3.
+This section shows my replications of Lazarev's graphs and tables. This first graph is labeled as Figure 3 in Lazarev's paper. 
 
 ```{r graphic, message = FALSE, warning = FALSE}
 # I commented out this whole code in my Milestone-3.Rmd in the Figure 3 section. I made a few changes for the purposes of this assignment, which I have indicated in this code chunk. 
@@ -365,7 +366,7 @@ figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
        subtitle = "Data From Lazarev, 'Laws in Conflict: Legacies of War, Gender, and Legal Pluralism in Chechnya'",
        x = "Legal System",
        y = "Mean of Index",
-       caption = "Data from surveys performed by Lazarev during fieldwork. Indexes are calculated by averaging the number \nof scenarios where participants respond that they would choose one form of law over another.") +
+       caption = "This data is taken from surveys performed by Lazarev during fieldwork. Indexes are calculated by averaging \nthe number of scenarios where participants respond that they would choose one form of law over another. Lazarev's \ndata shows gender-based trends in choice of legal structure in Chechnya. The graph shows how men and women \ndiffer in their respective likelihoods to choose Russian state law, sharia, and adat. Women are much more likely \nto choose Russian law than men are, while men are somewhat more likely to choose sharia or adat. The error \nbars are included as well to show the uncertainty around the means.") +
   coord_cartesian(ylim=c(0, .5))+  
   scale_y_continuous(breaks=seq(0, 0.5, .1)) +
   scale_fill_manual(name="Gender", 
@@ -386,7 +387,8 @@ figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) +
 
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.background = element_blank())
+        panel.background = element_blank(),
+  plot.caption = element_text(hjust = 0.5))
 
 figure3
 ```
@@ -534,19 +536,13 @@ Above is a screenshot of the actual table in Lazarev's paper. There are some dif
 knitr::include_graphics("lazarev_m5_screenshot.png")
 ```
 
-\pagebreak
-These next page displays a series of graph that is part of a series of ten graphs that show up as one graphic (Figure 2) in the article. Lazarev created a nice function that grouped them all together into one graphic, but it didn't work for me. I ran all of his graphs individually and was able to produce the same numbers that Lazarev cited for all graphs, so I have just included one below as an example.
+The next page displays a series of graph that is part of a series of ten graphs that show up as one graphic (Figure 2) in the article. Lazarev created a function that grouped them all together into one graphic; however, this function did not work as planned for me, so I split it up into 3 separate graphics using the ggarrange() function in the ggpubr package.
 ```{r include = FALSE}
-# NOTE: Above
-
-# This code was originally here, but the link threw an Error 404, so I'm just putting it in the comments. suppressMessages("https://raw.github.com/gerasy1987/useful_r/master/functions.R" %>% devtools::source_url()). My guess is that this was simply used to make sure that the code ran smoother.
-
 figdat <- read.csv2("raw-data/wp_data_raw.csv")
-
 ```
 
-
-```{r}
+\pagebreak
+```{r, fig.width = 10, fig.height = 12}
 h1 <- ggplot(data=figdat[!is.na(figdat$Q1),], 
              aes(factor(Q1))) + 
   geom_bar(aes(y = (..count..)/sum(..count..)),
@@ -559,7 +555,126 @@ h1 <- ggplot(data=figdat[!is.na(figdat$Q1),],
   labs(title = "Child Custody",
        y = "Share",
        x = "")
-h1
+
+h2 <- ggplot(data=figdat[!is.na(figdat$Q3_graph),], 
+             aes(factor(Q3_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Domestic Violence",
+       y = "Share",
+       x = "")
+
+h3 <- ggplot(data=figdat[!is.na(figdat$Q5_graph),], 
+             aes(factor(Q5_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Bride Kidnapping",
+       y = "Share",
+       x = "")
+
+h4 <- ggplot(data=figdat[!is.na(figdat$Q8_graph),], 
+             aes(factor(Q8_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Honor Killing",
+       y = "Share",
+       x = "")
+
+h5 <- ggplot(data=figdat[!is.na(figdat$Q10),], 
+             aes(factor(Q10))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Polygamy",
+       y = "Share",
+       x = "")
+
+h6 <- ggplot(data=figdat[!is.na(figdat$Q12),], 
+             aes(factor(Q12))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Inheritance",
+       y = "Share",
+       x = "")
+
+h7 <- ggplot(data=figdat[!is.na(figdat$Q14),], 
+             aes(factor(Q14))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Property",
+       y = "Share",
+       x = "")
+
+h8 <- ggplot(data=figdat[!is.na(figdat$Q16),], 
+             aes(factor(Q16))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Car Accident",
+       y = "Share",
+       x = "")
+
+h9 <- ggplot(data=figdat[!is.na(figdat$Q18),], 
+             aes(factor(Q18))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Debt",
+       y = "Share",
+       x = "")
+
+h10 <- ggplot(data=figdat[!is.na(figdat$Q20),], 
+              aes(factor(Q20))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Murder",
+       y = "Share",
+       x = "")
+
+ggarrange(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10,
+          ncol = 2, nrow = 5)
 ```
 
 \pagebreak
