@@ -1,0 +1,760 @@
+---
+title: "Lazarev Original Code"
+author: "Daniel Shapiro"
+date: "4/21/2020"
+output: html_document
+---
+
+## This is Lazarev's original code. Note that I placed the CSVs that he uses in a directory entitled "raw-data" for ease of access, so if you wish to work with this code, either edit code accordingly or download data from this site: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KOVT5Y
+
+
+rm(list=ls())  # clears objects in memory
+library(foreign)
+library(plyr)
+library(dplyr)
+library(Hmisc)
+library(arm)
+library(stargazer)
+library(ggthemes)
+
+require(ggplot2)
+require(reshape2)
+require(devtools)
+require(scales)
+library(lme4)
+
+library(magrittr)
+library(ggthemes)
+library(RColorBrewer)
+
+library(multiwayvcov)
+library(sandwich)
+library(lmtest)
+library(ggplot2)
+library(interactions)
+
+### Data Management
+
+data <- read.csv2("wp_data_raw.csv")
+stargazer(data)
+
+## Function 
+
+recode_dummy <- function(.df, 
+                         .name_q,
+                         .val) {
+  return(ifelse(test = (.df[,.name_q] != .val | is.na(.df[, .name_q])), 
+                yes = 0, 
+                no = 1))
+}
+
+data$V1RL <- recode_dummy(.df = data, 
+                          .name_q = "Q1", 
+                          .val = 1)
+varnames <- paste0("Q", c(1,3,5,seq(8,22,2)))
+
+
+## Loop for RL
+
+for (i in 1:10) {
+  .name_dummy <- paste0("V",i,"RL")
+  data[,.name_dummy] <- recode_dummy(.df = data, 
+                                     .name_q = varnames[i], 
+                                     .val = 1)
+}
+
+
+## Loop for Sharia 
+
+for (i in 1:10) {
+  .name_dummy <- paste0("V",i,"S")
+  data[,.name_dummy] <- recode_dummy(.df = data, 
+                                     .name_q = varnames[i], 
+                                     .val = 2)
+}
+
+
+## Loop for Adat 
+
+for (i in 1:10) {
+  .name_dummy <- paste0("V",i,"A")
+  data[,.name_dummy] <- recode_dummy(.df = data, 
+                                     .name_q = varnames[i], 
+                                     .val = 3)
+}
+
+
+
+##### INDEX for preference for Russian Law
+
+data$indexRL<-NA
+data$indexRL <- (data$V1RL + data$V2RL + data$V3RL + data$V4RL + data$V5RL +
+                   data$V6RL + data$V7RL + data$V8RL + data$V9RL + data$V10RL)/10
+
+hist(data$indexRL)
+
+##### INDEX for preference for Sharia
+
+data$indexS<-NA
+data$indexS <- (data$V1S + data$V2S + data$V3S + data$V4S + data$V5S +
+                  data$V6S + data$V7S + data$V8S + data$V9S + data$V10S)/10
+hist(data$indexS)
+
+##### INDEX for preference for Adat
+
+data$indexA<-NA
+data$indexA <- (data$V1A + data$V2A + data$V3A + data$V4A + data$V5A +
+                  data$V6A + data$V7A + data$V8A + data$V9A + data$V10A)/10
+hist(data$indexA)
+
+
+## Covariates 
+
+## Age Cohorts
+data$age_cohorts <- NA
+data$age_cohorts[data$age > 17 & data$age < 30]<- "youth"
+data$age_cohorts[data$age > 29 & data$age < 50]= "midage"
+data$age_cohorts[data$age > 49 & data$age < 83]= "older"
+
+## Imputation 
+
+library(mi)
+library(Hmisc)
+
+## Education 
+x<-cbind(data$edu,data$female,data$age,data$urban, data$urban_Soviet, data$knowRL, data$unemployed)
+datax<-as.data.frame(x)
+mdf<-missing_data.frame(datax)
+imp.mi<-mi(mdf)
+newdata<-complete(imp.mi,m=1)
+
+data$edufull<-newdata$V1
+
+## Income 
+x<-cbind(data$income, data$edufull, data$female, data$age,data$urban, data$official, data$unemployed)
+datax<-as.data.frame(x)
+mdf<-missing_data.frame(datax)
+imp.mi<-mi(mdf)
+newdata<-complete(imp.mi,m=1)
+
+data$incomefull<-newdata$V1
+
+write.csv2(data, file = "wp_data_survey.csv")
+
+
+
+############## Analysis #####################
+
+data <- read.csv2("wp_data_survey.csv")
+
+## Table1
+m1 <- lm(indexRL ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
+summary(m1) 
+
+m2 <- lm(indexS ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
+summary(m2) 
+
+m3 <- lm(indexA ~ killed + wounded + damaged + displaced + female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com, data=data) 
+summary(m3) 
+stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimization on Legal Preferences", align=TRUE, no.space=TRUE)
+
+stargazer(m1, m2, m3, title="OLS Regression Analysis of the Impact of Victimization on Legal Preferences", align=TRUE, no.space=TRUE,
+          type="html",
+          out="table1.doc")
+
+
+## Table 2
+m1 <- lm(indexRL ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = data)
+summary(m1)
+
+m1_vcov <- cluster.vcov(m1, data$location)
+
+coeftest(m1, vcov. = m1_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m1, data$location)))
+
+m2 <- lm(indexS ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = data)
+summary(m2)
+
+m2_vcov <- cluster.vcov(m2, data$location)
+
+coeftest(m2, vcov. = m2_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m2, data$location)))
+
+
+m3 <- lm(indexA ~ com_exposure*female + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com + 
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size + as.factor(rayon), data = data)
+summary(m3)
+
+m3_vcov <- cluster.vcov(m3, data$location)
+
+coeftest(m3, vcov. = m3_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m2, data$location)))
+
+stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
+                                coeftest(m2, vcov. = m2_vcov)[,2],
+                                coeftest(m3, vcov. = m3_vcov)[,2]),
+          type="html",
+          out="table2.doc")
+
+
+## Predicted Values 
+m1 <- lm(indexRL ~ com_exposure*female + 
+  as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
+    russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = data)
+summary(m1)
+
+newdata1 = data.frame(com_exposure = 0, female = 0, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+newdata2 = data.frame(com_exposure = 0, female = 1, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+newdata3 = data.frame(com_exposure = 1, female = 0, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+newdata4 = data.frame(com_exposure = 1, female = 1, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 1, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+
+newdata5 = data.frame(com_exposure = 0, female = 0, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+newdata6 = data.frame(com_exposure = 0, female = 1, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+newdata7 = data.frame(com_exposure = 1, female = 0, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+newdata8 = data.frame(com_exposure = 1, female = 1, age_cohorts = 'midage',
+                      incomefull = mean(data$incomefull), edufull = mean(data$edufull),
+                      unemployed = 0, urban_com = 0, russ_pop = mean(data$russ_pop), 
+                      lmaltitude = mean(data$lmaltitude), ldistance_Grozny = mean(data$ldistance_Grozny),
+                      lcom_size = mean(data$lcom_size))
+
+predict(m1, newdata1, type = "response")
+predict(m1, newdata2, type = "response")
+predict(m1, newdata3, type = "response")
+predict(m1, newdata4, type = "response")
+
+
+predict(m1, newdata5, type = "response")
+predict(m1, newdata6, type = "response")
+predict(m1, newdata7, type = "response")
+predict(m1, newdata8, type = "response")
+
+
+########## Table 3
+
+data <- read.csv2("wp_data_courts.csv")
+## Last names of plaintiffs are reducted from these data for privacy reasons 
+
+famdata <- data[which(data$family==1),]
+nonfamdata <- data[which(data$family==0),]
+
+m1 <- glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data=data)
+summary(m1)
+
+m1_vcov <- cluster.vcov(m1, data$uchastok)
+
+coeftest(m1, vcov. = m1_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m1, data$uchastok)))
+
+stargazer(m1, se = list(coeftest(m1, vcov. = m1_vcov)[,2]), 
+          omit.stat = c("rsq", "f", "adj.rsq", "ser"))
+
+m2 <- glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data=famdata)
+summary(m2)
+
+m2_vcov <- cluster.vcov(m2, famdata$uchastok)
+
+coeftest(m2, vcov. = m2_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m2, famdata$uchastok)))
+
+m3 <- glm(istez_females ~ com_exposure + urban +
+            mountainous + russ_pop + pop_fem_share + 
+            as.factor(year),family=binomial(link='logit'),data=nonfamdata)
+summary(m3)
+
+m3_vcov <- cluster.vcov(m3, nonfamdata$uchastok)
+
+coeftest(m3, vcov. = m3_vcov)
+
+cluster_se <- sqrt(diag(cluster.vcov(m3, nonfamdata$uchastok)))
+
+stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
+                                coeftest(m2, vcov. = m2_vcov)[,2],
+                                coeftest(m3, vcov. = m3_vcov)[,2]))
+
+
+stargazer(m1, m2, m3, se = list(coeftest(m1, vcov. = m1_vcov)[,2],
+                                coeftest(m2, vcov. = m2_vcov)[,2],
+                                coeftest(m3, vcov. = m3_vcov)[,2]),
+          type="html",
+          out="table3.doc")
+
+
+## Predicted Probability 
+m1 <- glm(istez_females ~ com_exposure + urban + mountainous + russ_pop + pop_fem_share + family + as.factor(year),family=binomial(link='logit'),data=data)
+summary(m1)
+
+newdata1 = data.frame(com_exposure = 0, urban = 0, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
+newdata2 = data.frame(com_exposure = 1, urban = 0, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
+
+predict(m1, newdata1, type = "response")
+predict(m1, newdata2, type = "response")
+
+newdata3 = data.frame(com_exposure = 0, urban = 0, mountainous =1, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
+newdata4 = data.frame(com_exposure = 1, urban = 0, mountainous =1, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
+
+predict(m1, newdata3, type = "response")
+predict(m1, newdata4, type = "response")
+
+newdata5 = data.frame(com_exposure = 0, urban = 1, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
+newdata6 = data.frame(com_exposure = 1, urban = 1, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 1, year = 2013)
+
+predict(m1, newdata5, type = "response")
+predict(m1, newdata6, type = "response")
+
+newdata7 = data.frame(com_exposure = 0, urban = 0, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 0, year = 2013)
+newdata8 = data.frame(com_exposure = 1, urban = 0, mountainous =0, russ_pop = 0, pop_fem_share = 0.5, family = 0, year = 2013)
+
+predict(m1, newdata7, type = "response")
+predict(m1, newdata8, type = "response")
+
+
+
+
+#################################### FIGURES
+
+data <- read.csv2("wp_data_raw.csv")
+
+
+##### Figure 2
+
+### Intergating 
+
+suppressMessages(
+  "https://raw.github.com/gerasy1987/useful_r/master/functions.R" %>%
+    devtools::source_url()
+)
+
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+
+
+### Plot 1.1: Child Custody Forum
+
+h1 <- ggplot(data=data[!is.na(data$Q1),], 
+             aes(factor(Q1))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Child Custody",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+### Plot 2.1: Domestic Violence 
+
+h2 <- ggplot(data=data[!is.na(data$Q3_graph),], 
+             aes(factor(Q3_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Domestic Violence",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+
+### Plot 3.1: Bride Kidnapping
+
+h3 <- ggplot(data=data[!is.na(data$Q5_graph),], 
+             aes(factor(Q5_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Bride Kidnapping",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+### Plot 4.1: Honor Killing
+
+h4 <- ggplot(data=data[!is.na(data$Q8_graph),], 
+             aes(factor(Q8_graph))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Honor Killing",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+### Plot 5.1: Polygamy
+h5 <- ggplot(data=data[!is.na(data$Q10),], 
+             aes(factor(Q10))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Polygamy",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+
+### Plot 6.1: Inheritance 
+table(data$Q12)
+
+h6 <- ggplot(data=data[!is.na(data$Q12),], 
+             aes(factor(Q12))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Inheritance",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+
+### Plot 7.1: Property 
+table(data$Q14)
+
+h7 <- ggplot(data=data[!is.na(data$Q14),], 
+             aes(factor(Q14))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Property",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+
+### Plot 8.1: Car Incident  
+table(data$Q16)
+
+h8 <- ggplot(data=data[!is.na(data$Q16),], 
+             aes(factor(Q16))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Car Accident",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+
+### Plot 9.1: Debt
+table(data$Q18)
+
+h9 <- ggplot(data=data[!is.na(data$Q18),], 
+             aes(factor(Q18))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Debt",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+### Plot 10.1: Murder
+table(data$Q20)
+
+h10 <- ggplot(data=data[!is.na(data$Q20),], 
+              aes(factor(Q20))) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)),
+           fill=("grey69"), position = "dodge") + 
+  geom_text(aes(y = ((..count..)/sum(..count..)), 
+                label = round((..count..)/sum(..count..), digits = 2)), 
+            stat = "count", vjust = -0.25, size = 8) +
+  scale_y_continuous(limits=c(0, .8)) +
+  scale_x_discrete(labels=c("1" = "State Law","2" = "Sharia","3" = "Adat", "4" = "Don't Know")) +
+  labs(title = "Murder",
+       y = "Share",
+       x = "") +
+  theme_few(base_size = 20, base_family = "Helvetica")
+
+
+figure2 <- multiplot(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, cols = 2)
+
+
+## Figure 3
+data <- read.csv2("wp_data_survey.csv")
+
+range01 <- function(x) {(x - min(x))/(max(x) - min(x))}
+require(plyr)
+length2 <- function (x, na.rm=FALSE) {
+  if (na.rm) sum(!is.na(x))
+  else       length(x)
+}
+
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(readr, ggplot2, plyr, dplyr, magrittr, tidyr, purrr, ggthemes)
+
+means1 <- round(tapply(data$indexRL, data$female, mean, na.rm = T), digits=3)
+sds1 <- round(tapply(data$indexRL, data$female, sd, na.rm = T), digits=3)
+n1 <- tapply(data$indexRL, data$female, length2, na.rm = T)
+se1 <- round(sds1/sqrt(n1), digits=3)
+error1 <- round((qt(0.975,df=n1-1)*se1), digits = 3)
+min <- c(0,1)
+object1 <- c(1,1)
+
+means2 <- round(tapply(data$indexS, data$female, mean, na.rm = T), digits=3)
+sds2 <- round(tapply(data$indexS, data$female, sd, na.rm = T), digits=3)
+n2 <- tapply(data$indexS, data$female, length2, na.rm = T)
+se2 <- round(sds2/sqrt(n2), digits=3)
+error2 <- round((qt(0.975,df=n2-1)*se2), digits = 3)
+object2 <- c(2,2)
+
+means3 <- round(tapply(data$indexA, data$female, mean, na.rm = T), digits=3)
+sds3 <- round(tapply(data$indexA, data$female, sd, na.rm = T), digits=3)
+n3 <- tapply(data$indexA, data$female, length2, na.rm = T)
+se3 <- round(sds3/sqrt(n3), digits=3)
+error3 <- round((qt(0.975,df=n3-1)*se3), digits = 3)
+object3 <- c(3,3)
+
+V1_dat <- rbind(cbind(object1, min, means1, sds1, n1, se1, error1, deparse.level=0),
+                cbind(object2, min, means2, sds2, n2, se2, error2, deparse.level=0),
+                cbind(object3, min, means3, sds3, n3, se3, error3, deparse.level=0))
+
+rownames(V1_dat) <- c(1:6) 
+colnames(V1_dat) <- c("sum", "min", "put", "sds", "n", "se", "error") 
+sb <- as.data.frame(V1_dat)
+
+
+sb2 <- sb
+sb2$min <- as.factor(sb2$min) 
+sb2$sum <- as.factor(sb2$sum)
+levels(sb2$sum) <- c("State Law", "Sharia", "Adat") 
+
+figure3 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) + 
+  geom_bar(position=position_dodge(), 
+           stat="identity", size=.3) +      
+  geom_errorbar(aes(ymin=put-error, ymax=put+error),
+                size=.5,    # Thinner lines
+                width=.3,
+                position=position_dodge(.9)) +
+  xlab("") +
+  ylab("") +
+  ggtitle("") +
+  coord_cartesian(ylim=c(0, .5))+  
+  scale_y_continuous(breaks=seq(0, 0.5, .1)) +
+  scale_fill_manual(name="Gender", # Legend label, use darker colors
+                    # breaks=c("1", "2", "3"),
+                    breaks=c("0", "1"), 
+                    labels=c("male", 
+                             "female"),
+                    values=c("cornsilk3", "gray33")) +
+  theme(text = element_text(size=25),
+        axis.line = element_line(colour = "black"),
+        axis.title.x = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank())
+
+
+
+#### Figure 5
+
+data <- read.csv2("wp_data_survey.csv")
+
+
+data$victimized[data$com_exposure=='0']<-'nonvictimized'
+data$victimized[data$com_exposure=='1']<-'victimized'
+
+data$gender[data$female=='0']<-'male'
+data$gender[data$female=='1']<-'female'
+
+m1 <- lm(indexRL ~ victimized*gender + 
+           as.factor(age_cohorts) + incomefull + edufull + unemployed + urban_com +
+           russ_pop + lmaltitude + ldistance_Grozny + lcom_size, data = data)
+summary(m1)
+
+figure5 <- cat_plot(m1, pred = victimized, modx = gender, geom = "bar") + 
+  labs(x="", y = "") +
+  scale_color_manual("gender", values=c('grey20','grey60'))+
+  scale_fill_manual("gender",values=c('grey30','grey80')) +
+  theme_few(base_size = 20, base_family = "Helvetica")
+  
+           
+          
+
+##### Figure 6
+total <- read.csv2("wp_data_Chechnya_Ingushetia.csv")
+
+ftotal <- total[which(total$data.female==1),]
+mtotal <- total[which(total$data.female==0),]
+
+means1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, mean, na.rm = T), digits=3)
+sds1 <- round(tapply(ftotal$data.indexRL, ftotal$chechnya, sd, na.rm = T), digits=3)
+n1 <- tapply(ftotal$data.indexRL, ftotal$chechnya, length2, na.rm = T)
+se1 <- round(sds1/sqrt(n1), digits=3)
+error1 <- round((qt(0.975,df=n1-1)*se1), digits = 3)
+min <- c(0,1)
+object1 <- c(1,1)
+
+means2 <- round(tapply(mtotal$data.indexRL, mtotal$chechnya, mean, na.rm = T), digits=3)
+sds2 <- round(tapply(mtotal$data.indexRL, mtotal$chechnya, sd, na.rm = T), digits=3)
+n2 <- tapply(mtotal$data.indexRL, mtotal$chechnya, length2, na.rm = T)
+se2 <- round(sds2/sqrt(n2), digits=3)
+error2 <- round((qt(0.975,df=n2-1)*se2), digits = 3)
+min <- c(0,1)
+object2 <- c(2,2)
+
+V1_dat <- rbind(cbind(object1, min, means1, sds1, n1, se1, error1, deparse.level=0),
+                cbind(object2, min, means2, sds2, n2, se2, error2, deparse.level=0))
+
+rownames(V1_dat) <- c(1:4) 
+colnames(V1_dat) <- c("sum", "min", "put", "sds", "n", "se", "error") 
+sb <- as.data.frame(V1_dat)
+
+sb2 <- sb
+sb2$min <- as.factor(sb2$min) 
+sb2$sum <- as.factor(sb2$sum)
+levels(sb2$sum) <- c("Women", "Men") 
+
+figure6 <- ggplot(sb2, aes(x=sum, y=put, fill = min)) + 
+  geom_bar(position=position_dodge(), 
+           stat="identity", size=.3) +      
+  geom_errorbar(aes(ymin=put-error, ymax=put+error),
+                size=.5,    # Thinner lines
+                width=.3,
+                position=position_dodge(.9)) +
+  xlab("") +
+  ylab("") +
+  ggtitle("") +
+  coord_cartesian(ylim=c(0, .5))+  
+  scale_y_continuous(breaks=seq(0, 0.5, .1)) +
+  scale_fill_manual(name="Region", # Legend label, use darker colors
+                    # breaks=c("1", "2", "3"),
+                    breaks=c("0", "1"), 
+                    labels=c("Ingushetia", 
+                             "Chechnya"),
+                    values=c("gray88", "grey44")) +
+  theme(text = element_text(size=25),
+        axis.line = element_line(colour = "black"),
+        axis.title.x = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank())
+
+Previewers originally developed by QDR and maintained at https://github.com/QualitativeDataRepository/dataverse-previewers. Feedback and contributions welcome.
