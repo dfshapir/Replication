@@ -5,7 +5,7 @@ date: "4/21/2020"
 output: html_document
 ---
 
-## This is Lazarev's original code. Note that I placed the CSVs that he uses in a directory entitled "raw-data" for ease of access, so if you wish to work with this code, either edit code accordingly or download data from this site: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KOVT5Y
+## This is Lazarev's original code. Note that I placed the CSVs that he uses in a directory entitled "raw-data" for ease of access, so if you wish to work with this code, either edit code accordingly or download data from this site: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KOVT5Y. Commented and (slightly) edited code can be found in the appendix of my main project Rmd.
 
 
 rm(list=ls())  # clears objects in memory
